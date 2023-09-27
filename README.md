@@ -1,1 +1,2 @@
-# IST 659 Database Dictators
+# IST 659 Final Project
+### Do not copy
