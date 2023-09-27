@@ -1,0 +1,81 @@
+Table player{
+  player_id int [primary key ,not null, increment]
+  player_fName varchar(50)
+  player_lName varchar(50)
+  player_email varchar(50) unique
+  player_userName varchar(50) unique
+  player_money money[null]
+  player_createdAt date
+}
+
+Table pStats{
+  pStats_id int [primary key, not null, increment]
+  pStats_wins int [null]
+  pStats_defeats int [null]
+  pStats_winRatio float [null]
+  pStats_totMoney money [null]
+  pStats_winnings money [null]
+  pStats_losses money [null]
+  pStats_royalFlush int [null]
+  pStats_bestHand varchar
+}
+
+Table match{
+  match_id int [primary key, not null, increment]
+  match_ante money [null]
+  match_smallBlind money
+  match_bigBlind money
+  match_maxBet money [null]
+  match_player1 varchar
+  match_player2 varchar
+  match_player3 varchar [null]
+  match_player4 varchar [null]
+  match_player5 varchar [null]
+  match_winner varchar
+  match_date date
+}
+
+Table lobby{
+  lobby_id int [primary key, not null, increment]
+  lobby_player1 varchar
+  lobby_player2 varchar
+  lobby_player3 varchar [null]
+  lobby_player4 varchar [null]
+  lobby_player5 varchar [null]
+}
+
+Table matchDet{
+  matchDet_id int [primary key, not null, increment]
+  matchDet_turn varchar
+  matchDet_player1Move varchar
+  matchDet_player1HoleCard1 int
+  matchDet_player1HoleCard2 int
+  matchDet_player2Move varchar
+  matchDet_player2HoleCard1 int
+  matchDet_player2HoleCard2 int
+  matchDet_player3Move varchar
+  matchDet_player3HoleCard1 int
+  matchDet_player3HoleCard2 int
+  matchDet_player4Move varchar
+  matchDet_player4HoleCard1 int
+  matchDet_player4HoleCard2 int
+  matchDet_player5Move varchar
+  matchDet_player5HoleCard1 int
+  matchDet_player5HoleCard2 int
+  matchDet_flopCard1 int
+  matchDet_flopCard2 int
+  matchDet_flopCard3 int
+  matchDet_turnCard int
+  matchDet_riverCard int
+}
+
+Table cards{
+  card_id int
+  card_value char(1)
+  card_suit varchar(50)
+}
+
+Table login{
+  login_username varchar
+  login_password varchar
+}
