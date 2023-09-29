@@ -11,9 +11,6 @@ DATABASE_URL = "sqlite:///poker.db"  # Replace with your database URL
 engine = create_engine(DATABASE_URL)
 db = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
 
-# Create a base model
-Base = declarative_base()
-
 # Initialize FastAPI
 app = FastAPI()
 
@@ -21,7 +18,7 @@ app = FastAPI()
 class LobbyCreate(BaseModel):
     lobby_name: str
 
-@app.post("/create-lobby/", response_model=)
+@app.post("/create-lobby/", response_model=Lobby)
 async def create_lobby(lobby: LobbyCreate):
 
     try:
