@@ -18,10 +18,10 @@ class Player(Base):
 class PlayerStats(Base):
     __tablename__ = 'playerStats'
     id = Column(Integer, ForeignKey('players.id'), primary_key=True)
-    wins = Column(Integer, default=0)
-    defeats = Column(Integer, default=0)
-    winRatio = Column(Float, default=0.0)
-    totalMoney = Column(Float, default=100.00)
+    wins = Column(Integer)
+    defeats = Column(Integer)
+    winRatio = Column(Float)
+    totalMoney = Column(Float)
     winnings = Column(Float)
     losses = Column(Float)
     royalFlush = Column(Integer)
