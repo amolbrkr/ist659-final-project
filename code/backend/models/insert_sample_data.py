@@ -10,8 +10,6 @@ engine = create_engine('sqlite:///C:/Users/franc/poker')
 Session = sessionmaker(bind=engine)
 session = Session()
 
-Base.metadata.create_all(engine)
-
 
 # Initialize Player objects
 players_to_add = [
@@ -19,47 +17,47 @@ players_to_add = [
         firstname='John',
         lastname='Doe',
         username='johndoe123',
-        passwordHash='some_hash_here',
-        balance=100.50,
+        passwordHash='123456',
+        balance=100000,
         createdAt=date.today()
     ),
     Player(
         firstname='Amol',
         lastname='Borkar',
-        username='amol_unique',
-        passwordHash='some_hash_here',
+        username='amol',
+        passwordHash='123456',
         balance=1000000,
         createdAt=date.today()
     ),
     Player(
         firstname='Francisco',
         lastname='Franco',
-        username='francisco_unique',
-        passwordHash='some_hash_here',
+        username='francisco',
+        passwordHash='123456',
         balance=1000000,
         createdAt=date.today()
     ),
     Player(
         firstname='Yashawi',
         lastname='Pandey',
-        username='yashawi_unique',
-        passwordHash='some_hash_here',
+        username='yashawi',
+        passwordHash='123456',
         balance=1000000,
         createdAt=date.today()
     ),
     Player(
         firstname='Caleb',
         lastname='Brown',
-        username='caleb_unique',
-        passwordHash='some_hash_here',
+        username='caleb',
+        passwordHash='123456',
         balance=1000000,
         createdAt=date.today()
     ),
     Player(
         firstname='Michael',
         lastname='DAmore',
-        username='michael_unique',
-        passwordHash='some_hash_here',
+        username='michael',
+        passwordHash='123456',
         balance=1000000,
         createdAt=date.today()
     )
@@ -71,3 +69,11 @@ for player in players_to_add:
 
 # Commit the transaction
 session.commit()
+
+# Query to fetch players
+query_results = session.query(Player.id, Player.username).all()
+
+# Print the results
+print("List of players added:")
+for id, username in query_results:
+    print(f"ID: {id}, Username: {username}")
