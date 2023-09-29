@@ -7,9 +7,8 @@ from sqlalchemy import inspect
 db_uri = 'sqlite:///C:/Users/franc/poker'
 engine = create_engine(db_uri)
 
-Base.metadata.drop_all(engine)
+# Base.metadata.drop_all(engine)
 Base.metadata.create_all(engine)
-
 
 expected_table_names = ['cards', 'player', 'pStats', 'match', 'lobby', 'matchDet', 'login']
 
