@@ -4,10 +4,9 @@ from models import *
 from datetime import date
 import os
 
-#set directory
+# set directory
 script_directory = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(script_directory))))
-
 
 
 DATABASE_URL = "sqlite:///database/poker"  # Replace with your database URL
@@ -18,53 +17,53 @@ session = Session()
 # Initialize Player objects
 players_to_add = [
     Player(
-        firstname='John',
-        lastname='Doe',
-        username='johndoe123',
-        passwordHash='123456',
+        firstname="John",
+        lastname="Doe",
+        username="johndoe123",
+        passwordHash="123456",
         balance=100000,
-        createdAt=date.today()
+        createdAt=date.today(),
     ),
     Player(
-        firstname='Amol',
-        lastname='Borkar',
-        username='amol',
-        passwordHash='123456',
+        firstname="Amol",
+        lastname="Borkar",
+        username="amol",
+        passwordHash="123456",
         balance=1000000,
-        createdAt=date.today()
+        createdAt=date.today(),
     ),
     Player(
-        firstname='Francisco',
-        lastname='Franco',
-        username='francisco',
-        passwordHash='123456',
+        firstname="Francisco",
+        lastname="Franco",
+        username="francisco",
+        passwordHash="123456",
         balance=1000000,
-        createdAt=date.today()
+        createdAt=date.today(),
     ),
     Player(
-        firstname='Yashawi',
-        lastname='Pandey',
-        username='yashawi',
-        passwordHash='123456',
+        firstname="Yashawi",
+        lastname="Pandey",
+        username="yashawi",
+        passwordHash="123456",
         balance=1000000,
-        createdAt=date.today()
+        createdAt=date.today(),
     ),
     Player(
-        firstname='Caleb',
-        lastname='Brown',
-        username='caleb',
-        passwordHash='123456',
+        firstname="Caleb",
+        lastname="Brown",
+        username="caleb",
+        passwordHash="123456",
         balance=1000000,
-        createdAt=date.today()
+        createdAt=date.today(),
     ),
     Player(
-        firstname='Michael',
-        lastname='DAmore',
-        username='michael',
-        passwordHash='123456',
+        firstname="Michael",
+        lastname="DAmore",
+        username="michael",
+        passwordHash="123456",
         balance=1000000,
-        createdAt=date.today()
-    )
+        createdAt=date.today(),
+    ),
 ]
 
 # Add players to the session

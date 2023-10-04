@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, text
 import pandas as pd
 import os
 
-#set directory
+# set directory
 script_directory = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(script_directory))))
 
