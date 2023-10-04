@@ -21,8 +21,9 @@ class Player(Base):
     lastname = Column(String(50))
     username = Column(String(50), unique=True)
     passwordHash = Column(String(100))
-    balance = Column(Float)
-    createdAt = Column(Date)
+    balance = Column(Float, default=100) 
+    createdAt = Column(DateTime, default=datetime.utcnow)
+  
     stats = relationship("PlayerStats", uselist=False, back_populates="player")
 
 
