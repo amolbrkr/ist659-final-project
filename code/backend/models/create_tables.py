@@ -11,7 +11,7 @@ from sqlalchemy import (
 )
 #set directory
 script_directory = os.path.dirname(os.path.abspath(__file__))
-os.chdir(os.path.dirname(os.path.dirname(script_directory)))
+os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(script_directory))))
 
 
 DATABASE_URL = "sqlite:///database/poker"  # Replace with your database URL
