@@ -1,44 +1,32 @@
+import os
+import hashlib
 from models.models import *
+from models.request_models import *
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import IntegrityError
-import os
 
-#set directory
 script_directory = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(os.path.dirname(script_directory)))
 
-# Define SQLAlchemy database connection
-DATABASE_URL = "sqlite:///database/poker"  # Replace with your database URL
+DATABASE_URL = "sqlite:///database/poker"
 engine = create_engine(DATABASE_URL)
 db = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
 
 # Initialize FastAPI
 app = FastAPI()
 
-# Create request models using Pydantic
-class LobbyCreate(BaseModel):
-    lobby_name: str
-
-# Create request models using Pydantic
-class PlayerCreate(BaseModel):
-    firstname: str
-    lastname: str
-    username: str
-    passwordHash: str
 
 @app.post("/create-player")
 async def create_player(player: PlayerCreate):
     try:
-        # Create a new plater in the database
         new_user = Player(
             firstname=player.firstname,
             lastname=player.lastname,
             username=player.username,
-            passwordHash=player.passwordHash
+            passwordHash=hashlib.sha256(player.password.encode('utf-8')).hexdigest(),
         )
         db.add(new_user)
         db.commit()
@@ -48,3 +36,20 @@ async def create_player(player: PlayerCreate):
         raise HTTPException(status_code=400, detail="Player name already exists")
     finally:
         db.close()
+
+
+@app.post("/create-lobby")
+async def create_lobby(hostplayerID: str):
+    player_list = [x[0] for x in db.query(Player.id).all()]
+    if not hostplayerID in player_list:
+       raise HTTPException(status_code=404, detail=f"Player does not exist.")
+
+    try:
+        new_lobby = Lobby(1, 5, "WAITING", hostplayerID)
+        db.add(new_lobby)
+        db.commit()
+        return new_lobby
+    except Exception as err:
+        raise HTTPException(
+            status_code=500, detail=f"Something went wrong, error: {str(err)}"
+        )
