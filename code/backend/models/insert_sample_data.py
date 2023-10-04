@@ -2,11 +2,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import *
 from datetime import date
+import os
+
+#set directory
+script_directory = os.path.dirname(os.path.abspath(__file__))
+os.chdir(os.path.dirname(os.path.dirname(script_directory)))
 
 
-
-
-engine = create_engine('sqlite:///C:/Users/franc/poker')
+DATABASE_URL = "sqlite:///database/poker"  # Replace with your database URL
 Session = sessionmaker(bind=engine)
 session = Session()
 

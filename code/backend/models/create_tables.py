@@ -9,9 +9,12 @@ from sqlalchemy import (
     Float,
     inspect,
 )
+#set directory
+script_directory = os.path.dirname(os.path.abspath(__file__))
+os.chdir(os.path.dirname(os.path.dirname(script_directory)))
 
-# Modify this path to your DB
-db_uri = "sqlite:///C:/Users/franc/poker"
+
+DATABASE_URL = "sqlite:///database/poker"  # Replace with your database URL
 engine = create_engine(db_uri)
 
 # Base.metadata.drop_all(engine)
