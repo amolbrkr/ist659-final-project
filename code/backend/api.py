@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import IntegrityError
 
 # Define SQLAlchemy database connection
-DATABASE_URL = "sqlite:///poker.db"  # Replace with your database URL
+DATABASE_URL = "sqlite:///C:/Users/franc/poker"  # Replace with your database URL
 engine = create_engine(DATABASE_URL)
 db = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
 
@@ -18,43 +18,43 @@ app = FastAPI()
 class LobbyCreate(BaseModel):
     lobby_name: str
 
-@app.post("/create-lobby/", response_model=Lobby)
-async def create_lobby(lobby: LobbyCreate):
+# @app.post("/create-lobby/", response_model=Lobby)
+# async def create_lobby(lobby: LobbyCreate):
 
-    try:
-        # Create a new lobby in the database
-        new_lobby = Lobby(**lobby.dict())
-        db.add(new_lobby)
-        db.commit()
-        db.refresh(new_lobby)
-        return new_lobby
-    except IntegrityError:
-        raise HTTPException(status_code=400, detail="Lobby name already exists")
-    finally:
-        db.close()
+#     try:
+#         # Create a new lobby in the database
+#         new_lobby = Lobby(**lobby.dict())
+#         db.add(new_lobby)
+#         db.commit()
+#         db.refresh(new_lobby)
+#         return new_lobby
+#     except IntegrityError:
+#         raise HTTPException(status_code=400, detail="Lobby name already exists")
+#     finally:
+#         db.close()
 
 # Create request models using Pydantic
-class UserCreate(BaseModel):
+class PlayerCreate(BaseModel):
     firstname: str
     lastname: str
     username: str
     passwordHash: str
 
-@app.post("/create-user/", response_model=User)
-async def create_user(user: UserCreate):
+@app.post("/create-player")
+async def create_player(player: PlayerCreate):
     try:
-        # Create a new user in the database
-        new_user = User(
-            firstname=user.firstname,
-            lastname=user.lastname,
-            username=user.username,
-            passwordHash=user.passwordHash
+        # Create a new plater in the database
+        new_user = Player(
+            firstname=player.firstname,
+            lastname=player.lastname,
+            username=player.username,
+            passwordHash=player.passwordHash
         )
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
         return new_user
     except IntegrityError:
-        raise HTTPException(status_code=400, detail="User name already exists")
+        raise HTTPException(status_code=400, detail="Player name already exists")
     finally:
         db.close()
