@@ -1,11 +1,10 @@
 import os
 import hashlib
-from models.models import *
-from models.request_models import *
+from models.models import Player, Lobby
+from models.request_models import PlayerCreate
 from fastapi import FastAPI, HTTPException
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import IntegrityError
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -26,7 +25,7 @@ async def create_player(player: PlayerCreate):
             firstname=player.firstname,
             lastname=player.lastname,
             username=player.username,
-            passwordHash=hashlib.sha256(player.password.encode('utf-8')).hexdigest(),
+            passwordHash=hashlib.sha256(player.password.encode("utf-8")).hexdigest(),
         )
         db.add(new_user)
         db.commit()
@@ -41,8 +40,8 @@ async def create_player(player: PlayerCreate):
 @app.post("/create-lobby")
 async def create_lobby(hostplayerID: str):
     player_list = [x[0] for x in db.query(Player.id).all()]
-    if not hostplayerID in player_list:
-       raise HTTPException(status_code=404, detail=f"Player does not exist.")
+    if hostplayerID not in player_list:
+        raise HTTPException(status_code=404, detail="Player does not exist.")
 
     try:
         new_lobby = Lobby(1, 5, "WAITING", hostplayerID)

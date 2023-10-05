@@ -1,3 +1,4 @@
+import os
 from models import *
 from sqlalchemy import (
     create_engine,
@@ -5,8 +6,6 @@ from sqlalchemy import (
     Integer,
     String,
     Numeric,
-    Date,
-    Float,
     inspect,
 )
 
