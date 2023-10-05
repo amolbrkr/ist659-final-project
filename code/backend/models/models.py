@@ -28,7 +28,7 @@ class Player(Base):
     stats = relationship("PlayerStats", uselist=False, back_populates="player")
 
 
-class PlayerStats(Base):
+class PlayerStat(Base):
     __tablename__ = "playerStats"
 
     id = Column(Integer, ForeignKey("players.id"), primary_key=True)
@@ -64,7 +64,7 @@ class PlayerLobby(Base):
     )
 
 
-class PlayerMoves(Base):
+class PlayerMove(Base):
     __tablename__ = "playerMoves"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -75,7 +75,7 @@ class PlayerMoves(Base):
     move_time = Column(DateTime)
 
 
-class PlayerCards(Base):
+class PlayerCard(Base):
     __tablename__ = "playerCards"
 
     player_id = Column(
@@ -88,7 +88,7 @@ class PlayerCards(Base):
     card_suite = Column(String(10), primary_key=True, nullable=False)
 
 
-class Cards(Base):
+class Card(Base):
     __tablename__ = "cards"
 
     id = Column(Integer, primary_key=True)
