@@ -1,6 +1,6 @@
 import os
 import hashlib
-from models.models import Player, Lobby
+from models.models import Player, Lobby, PlayerLobby
 from models.request_models import PlayerCreate
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import create_engine
@@ -37,6 +37,31 @@ async def create_player(player: PlayerCreate):
         db.close()
 
 
+@app.post("/login")
+async def login(username: str, password: str):
+    try:
+        password = hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+        player = (
+            db.query(Player)
+            .filter(Player.username == username, Player.passwordHash == password)
+            .first()
+        )
+
+        if player is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Player not found, resubmit username or password.",
+            )
+
+        return {"playerID": player.id}
+
+    except Exception as err:
+        raise HTTPException(
+            status_code=500, detail=f"Something went wrong, error: {str(err)}"
+        )
+
+
 @app.post("/create-lobby")
 async def create_lobby(hostplayerID: str):
     player_list = [x[0] for x in db.query(Player.id).all()]
@@ -48,6 +73,34 @@ async def create_lobby(hostplayerID: str):
         db.add(new_lobby)
         db.commit()
         return new_lobby
+    except Exception as err:
+        raise HTTPException(
+            status_code=500, detail=f"Something went wrong, error: {str(err)}"
+        )
+
+
+@app.post("/join-lobby")
+async def join_lobby(playerId: int, lobbyId: int):
+    try:
+        player = db.query(Player).filter(Player.id == playerId).first()
+
+        if player is None:
+            raise HTTPException(status_code=404, detail="Player not found.")
+
+        lobby = db.query(Lobby).filter(Lobby.id == lobbyId).first()
+
+        if lobby is None:
+            raise HTTPException(status_code=404, detail=f"No lobby with id: {lobbyId}")
+
+        if lobby.currentPlayers < lobby.maxPlayers:
+            lobby.currentPlayers += 1
+            db.add(PlayerLobby(playerId, lobbyId))
+            db.commit()
+
+            return {"message": "Player joined the lobby."}
+        else:
+            return {"message": f"Lobby {lobbyId} is full."}
+
     except Exception as err:
         raise HTTPException(
             status_code=500, detail=f"Something went wrong, error: {str(err)}"
