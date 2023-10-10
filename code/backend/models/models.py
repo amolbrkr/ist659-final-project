@@ -25,7 +25,7 @@ class Player(Base):
     balance = Column(Float, default=100)
     createdAt = Column(DateTime, default=datetime.utcnow)
 
-    stats = relationship("PlayerStats", uselist=False, back_populates="player")
+    stats = relationship("PlayerStat", uselist=False, back_populates="player")
 
 
 class PlayerStat(Base):
@@ -47,7 +47,7 @@ class Lobby(Base):
     __tablename__ = "lobbies"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    currentPlayers = Column(Integer, nullable=False)
+    currentPlayers = Column(Integer, default=1, nullable=False)
     maxPlayers = Column(Integer, default=5, nullable=False)
     status = Column(String(50), default="WAITING", nullable=False)
     hostPlayerId = Column(Integer, ForeignKey("players.id"), nullable=False)
