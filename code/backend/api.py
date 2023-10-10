@@ -10,12 +10,14 @@ from sqlalchemy.exc import IntegrityError
 script_directory = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(os.path.dirname(script_directory)))
 
+
 DATABASE_URL = "sqlite:///database/poker"
 engine = create_engine(DATABASE_URL)
 db = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
 
 # Initialize FastAPI
 app = FastAPI()
+
 
 @app.post("/create-player")
 async def create_player(player: PlayerCreate):
@@ -53,7 +55,14 @@ async def login(username: str, password: str):
                 detail="Player not found, resubmit username or password.",
             )
 
-        return {"playerID": player.id}
+        return {
+            "loginSuccess": True,
+            "player": player.id,
+            "firstname": player.firstname,
+            "lastname": player.lastname,
+            "username": player.username,
+            "balance": player.balance,
+        }
 
     except Exception as err:
         raise HTTPException(
@@ -62,20 +71,21 @@ async def login(username: str, password: str):
 
 
 @app.post("/create-lobby")
-async def create_lobby(hostplayerID: str):
+async def create_lobby(hostplayerID: int):
     player_list = [x[0] for x in db.query(Player.id).all()]
+    print(player_list)
     if hostplayerID not in player_list:
         raise HTTPException(status_code=404, detail="Player does not exist.")
 
-    try:
-        new_lobby = Lobby(1, 5, "WAITING", hostplayerID)
-        db.add(new_lobby)
-        db.commit()
-        return new_lobby
-    except Exception as err:
-        raise HTTPException(
-            status_code=500, detail=f"Something went wrong, error: {str(err)}"
-        )
+    # try:
+    new_lobby = Lobby(hostplayerID)
+    db.add(new_lobby)
+    db.commit()
+    return new_lobby
+    # except Exception as err:
+    #     raise HTTPException(
+    #         status_code=500, detail=f"Something went wrong, error: {str(err)}"
+    #     )
 
 
 @app.post("/join-lobby")
