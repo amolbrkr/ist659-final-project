@@ -17,7 +17,6 @@ db = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
 # Initialize FastAPI
 app = FastAPI()
 
-
 @app.post("/create-player")
 async def create_player(player: PlayerCreate):
     try:
