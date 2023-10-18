@@ -1,6 +1,6 @@
 import os
 import hashlib
-from models.models import Player, Lobby, PlayerCard, PlayerLobby, Card
+from models.models import Player, Lobby, PlayerCard, PlayerLobby, Card, DealerCard
 from models.request_models import PlayerCreate
 from models.functions import create_deck, deal_hand, rank_hand, rank_card
 from fastapi import FastAPI, HTTPException
@@ -141,13 +141,32 @@ async def deal_cards(lobby_id: int):
 @app.post("/play")
 async def play(lobby_id: int, player_id: int):
     session = db
+
     player_hand_query = session.query(PlayerCard.card_rank, PlayerCard.card_suite).filter(
-    PlayerCard.player_id == player_id,
-    PlayerCard.lobby_id == lobby_id
+        PlayerCard.player_id == player_id,
+        PlayerCard.lobby_id == lobby_id
     ).all()
     player_hand = [(card_rank, card_suite) for card_rank, card_suite in player_hand_query]
-    dealer_hand_query = session.query(PlayerCard.card_rank, PlayerCard.card_suite)
 
+    dealer_hand_query = session.query(DealerCard.card_rank, DealerCard.card_suite).filter(
+        PlayerCard.lobby_id == lobby_id
+    ).all
+    dealer_hand = [(card_rank, card_suite) for card_rank, card_suite in dealer_hand_query]
+
+    player_rank, player_high = rank_hand(player_hand)
+    dealer_rank, dealer_high = rank_hand(dealer_hand)
+
+    if player_rank > dealer_rank:
+        return{"outcome": "player_win"}
+    elif player_rank < dealer_rank:
+        return{"outcome": "dealer_win"}
+    else:
+        if player_high > dealer_high:
+            return{"outcome": "player_win"}
+        elif player_high < dealer_high:
+            return{"outcome": "dealer_win"}
+        else:
+            return{"outcome": "dealer_win"}
 
 
 
