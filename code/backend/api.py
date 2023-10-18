@@ -123,7 +123,7 @@ async def join_lobby(playerId: int, lobbyId: int):
     #         status_code=500, detail=f"Something went wrong, error: {str(err)}"
     #     )
 
-@app.post("/deal-cars´{lobby_id}")
+@app.post("/deal-cards´{lobby_id}")
 async def deal_cards(playerId: int, lobbyId: int):
     session = db
     player_hand = deal_hand()
