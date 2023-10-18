@@ -1,6 +1,7 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Enum, DECIMAL
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -115,20 +116,6 @@ class PlayerCard(Base):
         self.card_rank = card_rank
         self.card_suite = card_suite
 
-class dealerCard(Base):
-    __tablename__ = "dealerCards"
-
-    lobby_id = Column(
-        Integer, ForeignKey("lobbies.id"), primary_key=True, nullable=False
-    )
-    card_rank = Column(String(2), primary_key=True, nullable=False)
-    card_suite = Column(String(10), primary_key=True, nullable=False)
-
-    def __init__(self, lobby_id, card_rank, card_suite):
-        self.lobby_id = lobby_id
-        self.card_rank = card_rank
-        self.card_suite = card_suite
-
 class Card(Base):
     __tablename__ = "cards"
 
@@ -139,3 +126,21 @@ class Card(Base):
     def __init__(self, rank, suit):
         self.rank = rank
         self.suit = suit
+
+class Bid(Base):
+    __tablename__ = 'bids'
+
+    bid_id = Column(Integer, primary_key=True, autoincrement=True)
+    player_id = Column(Integer, ForeignKey('players.id'), nullable=False)
+    lobby_id = Column(Integer, ForeignKey('lobbies.id'), nullable=False)
+    bid_type = Column(Enum('Ante', 'Play', 'Bonus'), nullable=False)
+    amount = Column(DECIMAL(precision=10, scale=2), nullable=False)
+    bid_time = Column(DateTime, server_default=func.now())
+    
+    # Define relationships with other tables
+    player = relationship("Player", back_populates="bids")
+    lobby = relationship("Lobby", back_populates="bids")
+
+
+
+
