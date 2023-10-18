@@ -124,5 +124,5 @@ async def join_lobby(playerId: int, lobbyId: int):
     #     )
 
 @app.post("/deal-cars")
-
+async def deal_cards(playerId: int, lobbyId: int):
 

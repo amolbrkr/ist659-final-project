@@ -15,13 +15,13 @@ os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(script_directory))))
 
 
 DATABASE_URL = "sqlite:///database/poker"  # Replace with your database URL
-engine = create_engine(db_uri)
+engine = create_engine(DATABASE_URL)
 
 # Base.metadata.drop_all(engine)
 Base.metadata.create_all(engine)
 
 # Updating expected_table_names to your schema
-expected_table_names = ["players", "playerStats", "lobbies", "playerLobby", "cards"]
+expected_table_names = ["players", "playerStats", "lobbies", "playerLobby", "cards","playerCards","dealerCards"]
 
 # Initialize the inspector and grab the table names from the database
 inspector = inspect(engine)
