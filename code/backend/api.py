@@ -73,44 +73,56 @@ async def login(username: str, password: str):
 @app.post("/create-lobby")
 async def create_lobby(hostplayerID: int):
     player_list = [x[0] for x in db.query(Player.id).all()]
-    print(player_list)
     if hostplayerID not in player_list:
         raise HTTPException(status_code=404, detail="Player does not exist.")
 
+    try:
+        # Assuming hostplayerID is the ID of the host player
+        new_lobby = Lobby(
+            currentPlayers=1,   # Set the initial number of current players
+            maxPlayers=5,       # Set the maximum number of players
+            status="WAITING",   # Set the initial status
+            hostPlayerId=hostplayerID  # Set the host player's ID
+        )
+        db.add(new_lobby)
+        db.commit()
+        print(vars(new_lobby))
+        return new_lobby
+    except Exception as err:
+        raise HTTPException(
+            status_code=500, detail=f"Something went wrong, error: {str(err)}"
+        )
+
+ 
+
+@app.post("/join-lobby")
+async def join_lobby(playerId: int, lobbyId: int):
     # try:
-    new_lobby = Lobby(hostplayerID)
-    db.add(new_lobby)
-    db.commit()
-    return new_lobby
+    player = db.query(Player).filter(Player.id == playerId).first()
+
+    if player is None:
+        raise HTTPException(status_code=404, detail="Player not found.")
+
+    lobby = db.query(Lobby).filter(Lobby.id == lobbyId).first()
+
+    if lobby is None:
+        raise HTTPException(status_code=404, detail=f"No lobby with id: {lobbyId}")
+
+    # Add a check to see if player is already in lobby
+    if lobby.currentPlayers < lobby.maxPlayers:
+        lobby.currentPlayers += 1
+        db.add(PlayerLobby(player_id=playerId, lobby_id=lobbyId))
+        db.commit()
+
+        return {"message": "Player joined the lobby."}
+    else:
+        return {"message": f"Lobby {lobbyId} is full."}
+
     # except Exception as err:
     #     raise HTTPException(
     #         status_code=500, detail=f"Something went wrong, error: {str(err)}"
     #     )
 
+@app.post("/deal-cars")
 
-@app.post("/join-lobby")
-async def join_lobby(playerId: int, lobbyId: int):
-    try:
-        player = db.query(Player).filter(Player.id == playerId).first()
 
-        if player is None:
-            raise HTTPException(status_code=404, detail="Player not found.")
-
-        lobby = db.query(Lobby).filter(Lobby.id == lobbyId).first()
-
-        if lobby is None:
-            raise HTTPException(status_code=404, detail=f"No lobby with id: {lobbyId}")
-
-        if lobby.currentPlayers < lobby.maxPlayers:
-            lobby.currentPlayers += 1
-            db.add(PlayerLobby(playerId, lobbyId))
-            db.commit()
-
-            return {"message": "Player joined the lobby."}
-        else:
-            return {"message": f"Lobby {lobbyId} is full."}
-
-    except Exception as err:
-        raise HTTPException(
-            status_code=500, detail=f"Something went wrong, error: {str(err)}"
-        )

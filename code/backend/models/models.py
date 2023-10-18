@@ -1,18 +1,9 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Float,
-    ForeignKey,
-    Date,
-    DateTime,
-)
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
 from datetime import datetime
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
-
 
 class Player(Base):
     __tablename__ = "players"
@@ -27,6 +18,13 @@ class Player(Base):
 
     stats = relationship("PlayerStat", uselist=False, back_populates="player")
 
+    def __init__(self, firstname, lastname, username, passwordHash, balance=100.0, createdAt=None):
+        self.firstname = firstname
+        self.lastname = lastname
+        self.username = username
+        self.passwordHash = passwordHash
+        self.balance = balance
+        self.createdAt = createdAt if createdAt else datetime.utcnow()
 
 class PlayerStat(Base):
     __tablename__ = "playerStats"
@@ -42,6 +40,16 @@ class PlayerStat(Base):
     bestHand = Column(String)
     player = relationship("Player", back_populates="stats")
 
+    def __init__(self, id, wins, defeats, winRatio, totalMoney, winnings, losses, royalFlush, bestHand):
+        self.id = id
+        self.wins = wins
+        self.defeats = defeats
+        self.winRatio = winRatio
+        self.totalMoney = totalMoney
+        self.winnings = winnings
+        self.losses = losses
+        self.royalFlush = royalFlush
+        self.bestHand = bestHand
 
 class Lobby(Base):
     __tablename__ = "lobbies"
@@ -52,6 +60,11 @@ class Lobby(Base):
     status = Column(String(50), default="WAITING", nullable=False)
     hostPlayerId = Column(Integer, ForeignKey("players.id"), nullable=False)
 
+    def __init__(self, currentPlayers=1, maxPlayers=5, status="WAITING", hostPlayerId=None):
+        self.currentPlayers = currentPlayers
+        self.maxPlayers = maxPlayers
+        self.status = status
+        self.hostPlayerId = hostPlayerId
 
 class PlayerLobby(Base):
     __tablename__ = "playerLobby"
@@ -63,6 +76,9 @@ class PlayerLobby(Base):
         Integer, ForeignKey("lobbies.id"), primary_key=True, nullable=False
     )
 
+    def __init__(self, player_id, lobby_id):
+        self.player_id = player_id
+        self.lobby_id = lobby_id
 
 class PlayerMove(Base):
     __tablename__ = "playerMoves"
@@ -74,6 +90,12 @@ class PlayerMove(Base):
     amount = Column(Float, nullable=False)
     move_time = Column(DateTime)
 
+    def __init__(self, player_id, lobby_id, move_type, amount, move_time=None):
+        self.player_id = player_id
+        self.lobby_id = lobby_id
+        self.move_type = move_type
+        self.amount = amount
+        self.move_time = move_time if move_time else datetime.utcnow()
 
 class PlayerCard(Base):
     __tablename__ = "playerCards"
@@ -87,6 +109,25 @@ class PlayerCard(Base):
     card_rank = Column(String(2), primary_key=True, nullable=False)
     card_suite = Column(String(10), primary_key=True, nullable=False)
 
+    def __init__(self, player_id, lobby_id, card_rank, card_suite):
+        self.player_id = player_id
+        self.lobby_id = lobby_id
+        self.card_rank = card_rank
+        self.card_suite = card_suite
+
+class dealerCard(Base):
+    __tablename__ = "dealerCards"
+
+    lobby_id = Column(
+        Integer, ForeignKey("lobbies.id"), primary_key=True, nullable=False
+    )
+    card_rank = Column(String(2), primary_key=True, nullable=False)
+    card_suite = Column(String(10), primary_key=True, nullable=False)
+
+    def __init__(self, lobby_id, card_rank, card_suite):
+        self.lobby_id = lobby_id
+        self.card_rank = card_rank
+        self.card_suite = card_suite
 
 class Card(Base):
     __tablename__ = "cards"
@@ -94,3 +135,7 @@ class Card(Base):
     id = Column(Integer, primary_key=True)
     rank = Column(String(2))
     suit = Column(String(50))
+
+    def __init__(self, rank, suit):
+        self.rank = rank
+        self.suit = suit
