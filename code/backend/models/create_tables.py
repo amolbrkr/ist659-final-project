@@ -21,7 +21,7 @@ engine = create_engine(DATABASE_URL, echo=True)
 Base.metadata.create_all(engine)
 
 # Updating expected_table_names to your schema
-expected_table_names = ["players", "playerStats", "lobbies", "playerLobby", "cards"]
+expected_table_names = ["players", "playerStats", "lobbies", "playerLobby", "cards","playerCards","dealerCards"]
 
 # Initialize the inspector and grab the table names from the database
 inspector = inspect(engine)
