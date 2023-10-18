@@ -68,7 +68,6 @@ Table playerCards {
   card_suite varchar(10) [ primary key, not null]
 }
 
-
 Ref {
   playerCards.player_id - players.id
 }
@@ -76,6 +75,17 @@ Ref {
 Ref {
   lobbies.id - playerCards.lobby_id
 }
+
+Table dealerCards {
+
+  lobby_id int [primary key, not null]
+  card_rank varchar(2) [primary key, not null]
+  card_suite varchar(10) [ primary key, not null]
+}
+Ref {
+  lobbies.id - dealerCards.lobby_id
+}
+
 
 Table cards {
   id int
