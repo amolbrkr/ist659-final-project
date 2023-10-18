@@ -1,6 +1,6 @@
 import os
 import hashlib
-from models.models import Player, Lobby, PlayerLobby
+from models.models import Player, Lobby, PlayerLobby, deal_hand
 from models.request_models import PlayerCreate
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import create_engine
@@ -125,4 +125,7 @@ async def join_lobby(playerId: int, lobbyId: int):
 
 @app.post("/deal-cars")
 async def deal_cards(playerId: int, lobbyId: int):
+    player_hand = deal_hand()
+    dealer_hand = deal_hand()
+    return {"message": f"Cards dealt. {player_hand}"}
 
