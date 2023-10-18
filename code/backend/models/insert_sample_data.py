@@ -80,3 +80,4 @@ query_results = session.query(Player.id, Player.username).all()
 print("List of players added:")
 for id, username in query_results:
     print(f"ID: {id}, Username: {username}")
+

@@ -1,5 +1,8 @@
 
 import random
+from sqlalchemy.orm import Session
+from typing import List, Tuple
+
 
 # Define a function to create and return a deck of cards
 def create_deck():
@@ -41,3 +44,17 @@ def rank_hand(hand):
         return 1, max(values)
     
     return 0, max(values)
+
+# function to get a player hand
+def get_player_hand(db: Session, player_id: int, lobby_id: int) -> List[Tuple[str, str]]:
+    query = db.query(PlayerCard.card_rank, PlayerCard.card_suite).filter(
+        PlayerCard.player_id == player_id,
+        PlayerCard.lobby_id == lobby_id
+    ).all()
+
+    if not query:
+        return []  # Or some other default value, maybe raise an exception
+    
+    hand = [(card_rank, card_suite) for card_rank, card_suite in query]
+    return hand
+

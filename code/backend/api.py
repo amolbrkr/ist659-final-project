@@ -2,7 +2,7 @@ import os
 import hashlib
 from models.models import Player, Lobby, PlayerLobby, Card
 from models.request_models import PlayerCreate
-from models.functions import create_deck, deal_hand
+from models.functions import create_deck, deal_hand, rank_hand, rank_card
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -127,7 +127,7 @@ async def join_lobby(playerId: int, lobbyId: int):
 
 
 # Define a function to deal three cards
-@app.post("/deal cards/{lobby_id}")
+@app.post("/deal-cards")
 async def deal_cards(lobby_id: int):
     session = db
     Player = session.query(Lobby).filter(Player.id == lobby_id).first()
@@ -136,6 +136,16 @@ async def deal_cards(lobby_id: int):
     player_hand = deal_cards(deck)
     shuffle(lobby_hand)
     return {"lobby": lobby_id, "lobby_hand": lobby_hand, "player_hand": player_hand}
+
+
+@app.post("/play")
+async def play(lobby_id: int):
+    session = db
+    query = db.query(PlayerCard.card_rank, PlayerCard.card_suite).filter(
+    PlayerCard.player_id == player_id,
+    PlayerCard.lobby_id == lobby_id
+    ).all()
+
 
 
 # Simulate a player making an Ante bet
