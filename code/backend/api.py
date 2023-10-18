@@ -1,6 +1,6 @@
 import os
 import hashlib
-from models.models import Player, Lobby, PlayerLobby, Card
+from models.models import Player, Lobby, PlayerCard, PlayerLobby, Card
 from models.request_models import PlayerCreate
 from models.functions import create_deck, deal_hand, rank_hand, rank_card
 from fastapi import FastAPI, HTTPException
@@ -139,12 +139,15 @@ async def deal_cards(lobby_id: int):
 
 
 @app.post("/play")
-async def play(lobby_id: int):
+async def play(lobby_id: int, player_id: int):
     session = db
-    query = db.query(PlayerCard.card_rank, PlayerCard.card_suite).filter(
+    player_hand_query = session.query(PlayerCard.card_rank, PlayerCard.card_suite).filter(
     PlayerCard.player_id == player_id,
     PlayerCard.lobby_id == lobby_id
     ).all()
+    player_hand = [(card_rank, card_suite) for card_rank, card_suite in player_hand_query]
+    dealer_hand_query = session.query(PlayerCard.card_rank, PlayerCard.card_suite)
+
 
 
 

@@ -116,6 +116,20 @@ class PlayerCard(Base):
         self.card_rank = card_rank
         self.card_suite = card_suite
 
+class DealerCard(Base):
+    __tablename__ = "dealerCards"
+
+    lobby_id = Column(
+        Integer, ForeignKey("lobbies.id"), primary_key=True, nullable=False
+    )
+    card_rank = Column(String(2), primary_key=True, nullable=False)
+    card_suite = Column(String(10), primary_key=True, nullable=False)
+
+    def __init__(self, lobby_id, card_rank, card_suite):
+        self.lobby_id = lobby_id
+        self.card_rank = card_rank
+        self.card_suite = card_suite
+
 class Card(Base):
     __tablename__ = "cards"
 
