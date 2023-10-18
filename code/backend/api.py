@@ -1,11 +1,12 @@
 import os
 import hashlib
-from models.models import Player, Lobby, PlayerLobby, deal_hand
+from models.models import Player, Lobby, PlayerLobby, Card
 from models.request_models import PlayerCreate
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
+from random import shuffle
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(os.path.dirname(script_directory)))
@@ -123,10 +124,26 @@ async def join_lobby(playerId: int, lobbyId: int):
     #         status_code=500, detail=f"Something went wrong, error: {str(err)}"
     #     )
 
-@app.post("/deal-cards´{lobby_id}")
-async def deal_cards(playerId: int, lobbyId: int):
+# Define a function to create and return a deck of cards
+def create_deck():
+    ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
+    suits = ["Hearts", "Diamonds", "Clubs", "Spades"]
+    return [Card(rank, suit) for rank in ranks for suit in suits]
+
+# Define a function to deal three cards
+@app.post("/deal cards/{lobby_id}")
+async def deal_cards(lobby_id: int):
     session = db
-    player_hand = deal_hand()
-    dealer_hand = deal_hand()
-    return {"message": f"Cards dealt. {player_hand}"}
+    Player = session.query(Lobby).filter(Player.id == lobby_id).first()
+    deck = create_deck()
+    lobby_hand = deal_cards(deck)
+    shuffle(lobby_hand)
+    return {"lobby": lobby_id, "hand": lobby_hand}
+
+
+# Simulate a player making an Ante bet
+def make_ante_bet(player):
+    ante_bet = 10.0  # Set the Ante bet amount (you can modify this)
+    player.balance -= ante_bet
+    return ante_bet
 
