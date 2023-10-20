@@ -6,6 +6,9 @@ const Header = () => (
     justifyContent="space-between"
     alignItems="center"
     backgroundColor="whatsapp.500"
+    position="fixed"
+    width="100%"
+    boxShadow="md"
     color="whiteAlpha.500"
     p="2"
   >
