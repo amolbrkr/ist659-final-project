@@ -1,6 +1,6 @@
 import os
 import hashlib
-from models.models import Player, Lobby, PlayerCard, PlayerLobby, Card, DealerCard
+from models.models import Player, Lobby, PlayerCard, PlayerLobby, Card, Bid, DealerCard
 from models.request_models import PlayerCreate
 from models.functions import create_deck, deal_hand, rank_hand, rank_card
 from fastapi import FastAPI, HTTPException
@@ -137,42 +137,71 @@ async def deal_cards(lobby_id: int):
     shuffle(lobby_hand)
     return {"lobby": lobby_id, "lobby_hand": lobby_hand, "player_hand": player_hand}
 
+def make_ante_bet(db, player, lobby_id, ante_bet_amt):
+    
+    # Create a new bid record in the 'bids' table
+    ante_bid = Bid(
+        player_id=player.id,  # Set the player ID
+        lobby_id=lobby_id,    # Set the lobby or game ID
+        bid_type='Ante',      # Set the bid type
+        amount=ante_bet_amt
+    )
+
+    # Deduct the Ante bet amount from the player's balance
+    player.balance -= ante_bet_amt
+
+    db.add(ante_bid)
+    db.commit()
+
+    return ante_bid
+
+def update_player_balance(player_id, amount):
+    player = db.query(Player).filter(Player.id == player_id).first()
+    player.balance += amount
+    db.commit()
 
 @app.post("/play")
-async def play(lobby_id: int, player_id: int):
-    session = db
+async def play(lobby_id: int, player_id: int, ante_amount: int):
+    player = db.query(Player).filter(Player.id == player_id).first()
 
-    player_hand_query = session.query(PlayerCard.card_rank, PlayerCard.card_suite).filter(
+    # Call the function to make the ante bet with custom_amount (before play)
+    update_player_balance(player_id, -1 * ante_amount)
+    ante_bid = Bid(
+        player_id=player.id,  # Set the player ID
+        lobby_id=lobby_id,    # Set the lobby or game ID
+        bid_type='Ante',      # Set the bid type
+        amount=ante_amount
+    )
+    db.add(ante_bid)
+    db.commit()
+
+    player_hand_query = db.query(PlayerCard.card_rank, PlayerCard.card_suite).filter(
         PlayerCard.player_id == player_id,
         PlayerCard.lobby_id == lobby_id
     ).all()
     player_hand = [(card_rank, card_suite) for card_rank, card_suite in player_hand_query]
 
-    dealer_hand_query = session.query(DealerCard.card_rank, DealerCard.card_suite).filter(
+    dealer_hand_query = db.query(DealerCard.card_rank, DealerCard.card_suite).filter(
         PlayerCard.lobby_id == lobby_id
-    ).all
+    ).all()
     dealer_hand = [(card_rank, card_suite) for card_rank, card_suite in dealer_hand_query]
 
     player_rank, player_high = rank_hand(player_hand)
     dealer_rank, dealer_high = rank_hand(dealer_hand)
 
+    outcome = None
     if player_rank > dealer_rank:
-        return{"outcome": "player_win"}
+        outcome = "player_win"
     elif player_rank < dealer_rank:
-        return{"outcome": "dealer_win"}
+        outcome = "dealer_win"
     else:
         if player_high > dealer_high:
-            return{"outcome": "player_win"}
+            outcome = "player_win"
         elif player_high < dealer_high:
-            return{"outcome": "dealer_win"}
+            outcome = "dealer_win"
         else:
-            return{"outcome": "dealer_win"}
+            outcome = "dealer_win"
 
-
-
-# Simulate a player making an Ante bet
-def make_ante_bet(player):
-    ante_bet = 10.0  # Set the Ante bet amount (you can modify this)
-    player.balance -= ante_bet
-    return ante_bet
-
+    # Call the function to make the play bet with custom_amount
+    update_player_balance(player_id, ante_amount if outcome == "player_win" else -1 * ante_amount)
+    return {"outcome": outcome, "ante_bid": ante_bid}
