@@ -1,6 +1,6 @@
 import os
 import hashlib
-from models.models import Player, Lobby, PlayerCard, PlayerLobby, Card, Bid, DealerCard
+from models.models import Player, Lobby, PlayerCard, PlayerLobby, Card, Bid, DealerCard, TurnCount
 from models.request_models import PlayerCreate
 from models.functions import create_deck, deal_hand, rank_hand, rank_card
 from fastapi import FastAPI, HTTPException
@@ -161,7 +161,7 @@ def update_player_balance(player_id, amount):
     db.commit()
 
 @app.post("/play")
-async def play(lobby_id: int, player_id: int, ante_amount: int):
+async def play(lobby_id: int, player_id: int, action: str, ante_amount: int):
     player = db.query(Player).filter(Player.id == player_id).first()
 
     # Call the function to make the ante bet with custom_amount (before play)
@@ -205,3 +205,20 @@ async def play(lobby_id: int, player_id: int, ante_amount: int):
     # Call the function to make the play bet with custom_amount
     update_player_balance(player_id, ante_amount if outcome == "player_win" else -1 * ante_amount)
     return {"outcome": outcome, "ante_bid": ante_bid}
+
+@app.post("/fold")
+async def fold(player_id, ante_amount):
+
+    # Get the player by ID
+    player = db.query(Player).filter(Player.id == player_id).first()
+
+    if player:
+        # Update the player's balance by subtracting the ante amount
+        player.balance -= ante_amount
+
+        # Commit the changes to the database
+        db.commit()
+
+        return {"balance": player.balance}
+    else:
+        return {"error": "Player not found"}
