@@ -60,12 +60,14 @@ class Lobby(Base):
     maxPlayers = Column(Integer, default=5, nullable=False)
     status = Column(String(50), default="WAITING", nullable=False)
     hostPlayerId = Column(Integer, ForeignKey("players.id"), nullable=False)
+    turn = Column(Integer, default=0, nullable = False)
 
-    def __init__(self, currentPlayers=1, maxPlayers=5, status="WAITING", hostPlayerId=None):
+    def __init__(self, currentPlayers=1, maxPlayers=5, status="WAITING", hostPlayerId=None, turn=1):
         self.currentPlayers = currentPlayers
         self.maxPlayers = maxPlayers
         self.status = status
         self.hostPlayerId = hostPlayerId
+        self.turn = turn
 
 class PlayerLobby(Base):
     __tablename__ = "playerLobby"
@@ -102,31 +104,40 @@ class PlayerCard(Base):
     __tablename__ = "playerCards"
 
     player_id = Column(
-        Integer, ForeignKey("players.id"), primary_key=True, nullable=False
+        Integer, ForeignKey("players.id"), nullable=False
     )
     lobby_id = Column(
-        Integer, ForeignKey("lobbies.id"), primary_key=True, nullable=False
+        Integer, ForeignKey("lobbies.id"), nullable=False
     )
-    card_rank = Column(String(2), primary_key=True, nullable=False)
-    card_suite = Column(String(10), primary_key=True, nullable=False)
+    lobby_turn = Column(
+        Integer, ForeignKey("lobbies.turn"), nullable=False
+    )
+    card_rank = Column(String(2),  nullable=False)
+    card_suite = Column(String(10),  nullable=False)
 
-    def __init__(self, player_id, lobby_id, card_rank, card_suite):
+    def __init__(self, player_id, lobby_id, lobby_turn, card_rank, card_suite):
         self.player_id = player_id
         self.lobby_id = lobby_id
+        self.lobby_turn = lobby_turn
         self.card_rank = card_rank
         self.card_suite = card_suite
+
 
 class DealerCard(Base):
     __tablename__ = "dealerCards"
 
     lobby_id = Column(
-        Integer, ForeignKey("lobbies.id"), primary_key=True, nullable=False
+        Integer, ForeignKey("lobbies.id"), nullable=False
     )
-    card_rank = Column(String(2), primary_key=True, nullable=False)
-    card_suite = Column(String(10), primary_key=True, nullable=False)
+    lobby_turn = Column(
+        Integer, ForeignKey("lobbies.turn"), nullable=False
+    )
+    card_rank = Column(String(2), nullable=False)
+    card_suite = Column(String(10), nullable=False)
 
-    def __init__(self, lobby_id, card_rank, card_suite):
+    def __init__(self, lobby_id, lobby_turn, card_rank, card_suite):
         self.lobby_id = lobby_id
+        self.lobby_turn = lobby_turn
         self.card_rank = card_rank
         self.card_suite = card_suite
 

@@ -130,12 +130,17 @@ async def join_lobby(playerId: int, lobbyId: int):
 @app.post("/deal-cards")
 async def deal_cards(lobby_id: int):
     session = db
+    current_lobby = db.query(Lobby).filter(Lobby.id == lobby_id).first()
+    # Update the turn and commit
+    new_turn= current_lobby.turn + 1
+    current_lobby.turn = new_turn
+    db.commit()
     Player = session.query(Lobby).filter(Player.id == lobby_id).first()
     deck = create_deck()
     lobby_hand = deal_cards(deck)
     player_hand = deal_cards(deck)
     shuffle(lobby_hand)
-    return {"lobby": lobby_id, "lobby_hand": lobby_hand, "player_hand": player_hand}
+    return {"lobby": lobby_id, "turn":new_turn, "lobby_hand": lobby_hand, "player_hand": player_hand}
 
 def make_ante_bet(db, player, lobby_id, ante_bet_amt):
     
@@ -161,8 +166,9 @@ def update_player_balance(player_id, amount):
     db.commit()
 
 @app.post("/play")
-async def play(lobby_id: int, player_id: int, ante_amount: int):
+async def play(lobby_id: int, player_id: int, turn: int, ante_amount: int):
     player = db.query(Player).filter(Player.id == player_id).first()
+
 
     # Call the function to make the ante bet with custom_amount (before play)
     update_player_balance(player_id, -1 * ante_amount)
@@ -174,21 +180,25 @@ async def play(lobby_id: int, player_id: int, ante_amount: int):
     )
     db.add(ante_bid)
     db.commit()
-
+    # queries to get the player and dealer hand
     player_hand_query = db.query(PlayerCard.card_rank, PlayerCard.card_suite).filter(
         PlayerCard.player_id == player_id,
-        PlayerCard.lobby_id == lobby_id
+        PlayerCard.lobby_id == lobby_id,
+        PlayerCard.turn == turn,
     ).all()
     player_hand = [(card_rank, card_suite) for card_rank, card_suite in player_hand_query]
 
     dealer_hand_query = db.query(DealerCard.card_rank, DealerCard.card_suite).filter(
-        PlayerCard.lobby_id == lobby_id
+        DealerCard.lobby_id == lobby_id,
+        DealerCard.turn == turn
     ).all()
     dealer_hand = [(card_rank, card_suite) for card_rank, card_suite in dealer_hand_query]
 
+    #rank the hands
     player_rank, player_high = rank_hand(player_hand)
     dealer_rank, dealer_high = rank_hand(dealer_hand)
 
+    #compare the ranks
     outcome = None
     if player_rank > dealer_rank:
         outcome = "player_win"
@@ -201,6 +211,8 @@ async def play(lobby_id: int, player_id: int, ante_amount: int):
             outcome = "dealer_win"
         else:
             return{"outcome": "dealer_win"}
+        
+
 
 
 # Simulate a player making an Ante bet
