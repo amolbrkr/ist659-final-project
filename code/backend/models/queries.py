@@ -27,15 +27,17 @@ session.add(new_lobby)
 session.commit()
 
 
-#  Query the Lobby table for the specific record we added (based on some unique criteria, say hostPlayerId)
-found_lobby = session.query(Lobby).filter_by(hostPlayerId=1).first()
+session.add(PlayerCard(player_id=1, lobby_id=1, card_rank="A", card_suite="Hearts"))
+session.add(PlayerCard(player_id=1, lobby_id=1, card_rank="K", card_suite="Clubs"))
 
-# Print the details to confirm
-if found_lobby:
-    print(f"Lobby ID: {found_lobby.id}")
-    print(f"Current Players: {found_lobby.currentPlayers}")
-    print(f"Max Players: {found_lobby.maxPlayers}")
-    print(f"Status: {found_lobby.status}")
-    print(f"Host Player ID: {found_lobby.hostPlayerId}")
-else:
-    print("Hmm, looks like that lobby doesn't exist. Or you're in a parallel universe. Either way, weird.")
+
+# Commit these to the database
+session.commit()
+
+# Now, let's deal some cards to the dealer in a lobby
+session.add(DealerCard(lobby_id=1, card_rank="2", card_suite="Hearts"))
+session.add(DealerCard(lobby_id=1, card_rank="Q", card_suite="Diamonds"))
+session.add(DealerCard(lobby_id=1, card_rank="9", card_suite="Clubs"))
+
+# Commit these to the database
+session.commit()
