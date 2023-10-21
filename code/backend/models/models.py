@@ -137,7 +137,7 @@ class Bid(Base):
     amount = Column(DECIMAL(precision=10, scale=2), nullable=False)
     bid_time = Column(DateTime, server_default=func.now())
     
-    # Define relationships with other tables
-    player = relationship("Player", back_populates="bids")
-    lobby = relationship("Lobby", back_populates="bids")
+    # # Define relationships with other tables
+    # player = relationship("Player", back_populates="bids")
+    # lobby = relationship("Lobby", back_populates="bids")
 

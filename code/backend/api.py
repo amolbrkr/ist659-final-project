@@ -200,7 +200,14 @@ async def play(lobby_id: int, player_id: int, ante_amount: int):
         elif player_high < dealer_high:
             outcome = "dealer_win"
         else:
-            outcome = "dealer_win"
+            return{"outcome": "dealer_win"}
+
+
+# Simulate a player making an Ante bet
+def make_ante_bet(player):
+    ante_bet = 10.0  # Set the Ante bet amount (you can modify this)
+    player.balance -= ante_bet
+    return ante_bet
 
     # Call the function to make the play bet with custom_amount
     update_player_balance(player_id, ante_amount if outcome == "player_win" else -1 * ante_amount)
