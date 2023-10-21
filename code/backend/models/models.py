@@ -141,3 +141,7 @@ class Bid(Base):
     player = relationship("Player", back_populates="bids")
     lobby = relationship("Lobby", back_populates="bids")
 
+class TurnCount(Base):
+    __tablename__ = 'turn_count'
+    id = Column(Integer, primary_key=True)
+    count = Column(Integer, default=0)
