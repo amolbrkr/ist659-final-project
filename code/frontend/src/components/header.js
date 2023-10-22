@@ -5,14 +5,14 @@ const Header = () => (
   <Flex
     justifyContent="space-between"
     alignItems="center"
-    backgroundColor="whatsapp.500"
+    backgroundColor="green.500"
     position="fixed"
     width="100%"
     boxShadow="md"
     color="whiteAlpha.500"
     p="2"
   >
-    <Text color="white" fontSize="2xl">
+    <Text fontWeight="bold" color="white" fontSize="2xl">
       Three Card Poker
     </Text>
     <Flex>

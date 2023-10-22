@@ -1,7 +1,7 @@
 import {
+  Button,
   Flex,
   Input,
-  Button,
   Tab,
   TabList,
   TabPanel,
@@ -10,8 +10,15 @@ import {
 } from "@chakra-ui/react";
 
 const UserAuth = () => (
-  <Flex align="center" justify="center">
-    <Tabs size="md" isFitted width="40vh">
+  <Flex
+    minHeight="40vh"
+    p="4"
+    bg="white"
+    borderRadius="10px"
+    align="flex-start"
+    justify="center"
+  >
+    <Tabs size="md" isFitted width="40vh" colorScheme="green">
       <TabList>
         <Tab panelId="login">Login</Tab>
         <Tab panelId="signup">Sign up</Tab>
@@ -20,7 +27,7 @@ const UserAuth = () => (
         <TabPanel>
           <Flex flexDirection="column" alignItems="center">
             <Input placeholder="Username" mb={2} />
-            <Input type="password" placeholder="Passowrd" mb={2} />
+            <Input type="password" placeholder="Password" mb={2} />
             <Button variant="solid" size="md">
               Login
             </Button>
@@ -31,7 +38,7 @@ const UserAuth = () => (
             <Input placeholder="First name" mb={2} />
             <Input placeholder="Last name" mb={2} />
             <Input placeholder="Username" mb={2} />
-            <Input type="password" placeholder="Passowrd" mb={2} />
+            <Input type="password" placeholder="Password" mb={2} />
             <Button variant="solid" size="md">
               Register
             </Button>
