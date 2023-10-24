@@ -1,13 +1,15 @@
 import React from "react";
+
 const f = (x) => {
   if (x == 1) return "A";
   if (x <= 10) return x;
   return "J,Q,K".split(",")[x - 11];
 };
+
 const Card = ({ number, suit }) => {
   const style = {
     width: "calc(100vw/14)",
-    margin: "2px"
+    margin: "2px",
   };
   const [imgUrl, setImgUrl] = React.useState("");
   React.useEffect(() => {
@@ -18,11 +20,9 @@ const Card = ({ number, suit }) => {
     );
   }, [number, suit]);
   return imgUrl === "" ? null : (
-    <img onClick={() => setImgUrl("")} style={style} src={imgUrl} />
+    <img alt="text" onClick={() => setImgUrl("")} style={style} src={imgUrl} />
   );
 };
 const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 
 export default Card;
-
-  
