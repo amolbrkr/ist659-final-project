@@ -10,6 +10,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useState } from "react";
+import Card from "./card";
 
 const UserAuth = () => {
   const [fname, setFname] = useState("");
@@ -34,6 +35,7 @@ const UserAuth = () => {
       align="flex-start"
       justify="center"
     >
+      <Card />
       <Tabs size="md" isFitted width="40vh" colorScheme="green">
         <TabList>
           <Tab panelId="login">Login</Tab>

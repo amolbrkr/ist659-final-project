@@ -7,15 +7,17 @@ import {
   Image,
   Button
 } from '@chakra-ui/react'
+import Card from './card'
 
 const App = () => (
   <ChakraProvider resetCSS>
     <Flex flexDirection="column">
       <Flex>
         <Flex>
-          <Image height="100px" width="100px" />
+          {/* <Card /> */}
+          {/* <Image height="100px" width="100px" />
           <Image height="100px" width="100px" ml={10} mr={10} />
-          <Image height="100px" width="100px" />
+          <Image height="100px" width="100px" /> */}
         </Flex>
       </Flex>
       <Flex>
