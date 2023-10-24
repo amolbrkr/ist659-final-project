@@ -1,8 +1,17 @@
 import os
 import hashlib
-from models.models import Player, Lobby, PlayerLobby, Card
+from models.models import (
+    Player,
+    Lobby,
+    PlayerCard,
+    PlayerLobby,
+    Card,
+    Bid,
+    DealerCard,
+    TurnCount,
+)
 from models.request_models import PlayerCreate
-from models.functions import create_deck, deal_hand
+from models.functions import create_deck, deal_hand, rank_hand, rank_card
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -81,10 +90,10 @@ async def create_lobby(hostplayerID: int):
     try:
         # Assuming hostplayerID is the ID of the host player
         new_lobby = Lobby(
-            currentPlayers=1,   # Set the initial number of current players
-            maxPlayers=5,       # Set the maximum number of players
-            status="WAITING",   # Set the initial status
-            hostPlayerId=hostplayerID  # Set the host player's ID
+            currentPlayers=1,  # Set the initial number of current players
+            maxPlayers=5,  # Set the maximum number of players
+            status="WAITING",  # Set the initial status
+            hostPlayerId=hostplayerID,  # Set the host player's ID
         )
         db.add(new_lobby)
         db.commit()
@@ -95,7 +104,6 @@ async def create_lobby(hostplayerID: int):
             status_code=500, detail=f"Something went wrong, error: {str(err)}"
         )
 
- 
 
 @app.post("/join-lobby")
 async def join_lobby(playerId: int, lobbyId: int):
@@ -127,20 +135,101 @@ async def join_lobby(playerId: int, lobbyId: int):
 
 
 # Define a function to deal three cards
-@app.post("/deal cards/{lobby_id}")
+@app.post("/deal-cards")
 async def deal_cards(lobby_id: int):
     session = db
+    current_lobby = db.query(Lobby).filter(Lobby.id == lobby_id).first()
+    # Update the turn and commit
+    new_turn = current_lobby.turn + 1
+    current_lobby.turn = new_turn
+    db.commit()
     Player = session.query(Lobby).filter(Player.id == lobby_id).first()
     deck = create_deck()
     lobby_hand = deal_cards(deck)
     player_hand = deal_cards(deck)
     shuffle(lobby_hand)
-    return {"lobby": lobby_id, "lobby_hand": lobby_hand, "player_hand": player_hand}
+    return {
+        "lobby": lobby_id,
+        "turn": new_turn,
+        "lobby_hand": lobby_hand,
+        "player_hand": player_hand,
+    }
 
 
-# Simulate a player making an Ante bet
-def make_ante_bet(player):
-    ante_bet = 10.0  # Set the Ante bet amount (you can modify this)
-    player.balance -= ante_bet
-    return ante_bet
+def update_player_balance(player_id, amount):
+    player = db.query(Player).filter(Player.id == player_id).first()
+    player.balance += amount
+    db.commit()
 
+
+@app.post("/play")
+async def play(lobby_id: int, player_id: int, action: str, turn: int, ante_amount: int):
+    player = db.query(Player).filter(Player.id == player_id).first()
+
+    # Call the function to make the ante bet with custom_amount (before play)
+    update_player_balance(player_id, -1 * ante_amount)
+    ante_bid = Bid(
+        player_id=player.id,  # Set the player ID
+        lobby_id=lobby_id,  # Set the lobby or game ID
+        bid_type="Ante",  # Set the bid type
+        amount=ante_amount,
+    )
+    db.add(ante_bid)
+    db.commit()
+    # queries to get the player and dealer hand
+    player_hand_query = (
+        db.query(PlayerCard.card_rank, PlayerCard.card_suite)
+        .filter(
+            PlayerCard.player_id == player_id,
+            PlayerCard.lobby_id == lobby_id,
+            PlayerCard.turn == turn,
+        )
+        .all()
+    )
+    player_hand = [
+        (card_rank, card_suite) for card_rank, card_suite in player_hand_query
+    ]
+
+    dealer_hand_query = (
+        db.query(DealerCard.card_rank, DealerCard.card_suite)
+        .filter(DealerCard.lobby_id == lobby_id, DealerCard.turn == turn)
+        .all()
+    )
+    dealer_hand = [
+        (card_rank, card_suite) for card_rank, card_suite in dealer_hand_query
+    ]
+
+    # rank the hands
+    player_rank, player_high = rank_hand(player_hand)
+    dealer_rank, dealer_high = rank_hand(dealer_hand)
+
+    # compare the ranks
+    outcome = None
+    if player_rank > dealer_rank:
+        outcome = "player_win"
+    elif player_rank < dealer_rank:
+        outcome = "dealer_win"
+    else:
+        if player_high > dealer_high:
+            outcome = "player_win"
+        elif player_high < dealer_high:
+            outcome = "dealer_win"
+        else:
+            return {"outcome": outcome}
+
+
+@app.post("/fold")
+async def fold(player_id, ante_amount):
+    # Get the player by ID
+    player = db.query(Player).filter(Player.id == player_id).first()
+
+    if player:
+        # Update the player's balance by subtracting the ante amount
+        player.balance -= ante_amount
+
+        # Commit the changes to the database
+        db.commit()
+
+        return {"balance": player.balance}
+    else:
+        return {"error": "Player not found"}

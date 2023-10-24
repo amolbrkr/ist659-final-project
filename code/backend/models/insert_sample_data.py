@@ -10,6 +10,7 @@ os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(script_directory))))
 
 
 DATABASE_URL = "sqlite:///database/poker"  # Replace with your database URL
+engine = create_engine(DATABASE_URL, echo=True)
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -80,3 +81,4 @@ query_results = session.query(Player.id, Player.username).all()
 print("List of players added:")
 for id, username in query_results:
     print(f"ID: {id}, Username: {username}")
+
