@@ -35,7 +35,6 @@ const UserAuth = () => {
       align="flex-start"
       justify="center"
     >
-      <Card />
       <Tabs size="md" isFitted width="40vh" colorScheme="green">
         <TabList>
           <Tab panelId="login">Login</Tab>

@@ -1,37 +1,28 @@
-import React from 'react';
-
-function SvgCards() {
-  return (
-    <div>
-      <h1>Example SVG with cards</h1>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="48"
-        height="48"
-        fill={fillColor}
-        class="bi bi-google"
-        viewBox="0 0 16 16"
-      >
-        {/* Your SVG content here */}
-        <use href="node_modules/svg-cards/svg-cards.svg#back" x="150" y="10" fill="red" />
-        <use href="node_modules/svg-cards/svg-cards.svg#heart_1" x="0" y="0" />
-        <use href="node_modules/svg-cards/svg-cards.svg#joker_black" x="100" y="100" />
-        <use
-          href="node_modules/svg-cards/svg-cards.svg#spade_10"
-          x="200"
-          y="200"
-          transform="rotate(45,198.0375,122.320)scale(0.5)"
-        />
-        <use
-          href="svg-cards.svg#club_jack"
-          x="300"
-          y="100"
-          transform="rotate(75,198.0375,122.320)scale(0.75)"
-        />
-      </svg>
-    </div>
+import React from "react";
+const f = (x) => {
+  if (x == 1) return "A";
+  if (x <= 10) return x;
+  return "J,Q,K".split(",")[x - 11];
+};
+const Card = ({ number, suit }) => {
+  const style = {
+    width: "calc(100vw/14)",
+    margin: "2px"
+  };
+  const [imgUrl, setImgUrl] = React.useState("");
+  React.useEffect(() => {
+    setImgUrl(
+      `https://raw.githubusercontent.com/richardschneider/cardsJS/fe5e857c5094468c58a7cfe0a7075ad351fc7920/cards/${f(
+        number
+      )}${suit}.svg`
+    );
+  }, [number, suit]);
+  return imgUrl === "" ? null : (
+    <img onClick={() => setImgUrl("")} style={style} src={imgUrl} />
   );
-}
+};
+const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 
-export default SvgCards;
+export default Card;
+
   
