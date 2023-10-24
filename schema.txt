@@ -16,12 +16,12 @@ Table playerStats {
   totalMoney money [default: 100.00, null]
   winnings money [null]
   losses money [null]
-  royalFlush int [null]
-  bestHand varchar
 }
+
 Ref {
   playerStats.id - players.id
 }
+
 Table lobbies {
   id int [primary key, not null, increment]
   currentPlayers int [not null]
