@@ -138,8 +138,8 @@ class PlayerMove(Base):
 class PlayerCard(Base):
     __tablename__ = "playerCards"
 
-    player_id = Column(Integer, ForeignKey("players.id"), nullable=False)
-    lobby_id = Column(Integer, ForeignKey("lobbies.id"), nullable=False)
+    player_id = Column(Integer, ForeignKey("players.id"), primary_key=True, nullable=False)
+    lobby_id = Column(Integer, ForeignKey("lobbies.id"), primary_key=True, nullable=False)
     lobby_turn = Column(Integer, ForeignKey("lobbies.turn"), nullable=False)
     card_rank = Column(String(2), nullable=False)
     card_suite = Column(String(10), nullable=False)
@@ -155,6 +155,7 @@ class PlayerCard(Base):
 class DealerCard(Base):
     __tablename__ = "dealerCards"
 
+    id = Column(Integer, primary_key=True, autoincrement=True)
     lobby_id = Column(Integer, ForeignKey("lobbies.id"), nullable=False)
     lobby_turn = Column(Integer, ForeignKey("lobbies.turn"), nullable=False)
     card_rank = Column(String(2), nullable=False)

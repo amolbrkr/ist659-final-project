@@ -1,5 +1,5 @@
 import random
-from models import PlayerCard
+from .models import PlayerCard
 from sqlalchemy.orm import Session
 from typing import List, Tuple
 
