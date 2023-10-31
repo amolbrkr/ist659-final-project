@@ -1,18 +1,10 @@
 import os
 import hashlib
-from models.models import (
-    Player,
-    Lobby,
-    PlayerCard,
-    PlayerLobby,
-    Card,
-    Bid,
-    DealerCard,
-    TurnCount,
-)
-from models.request_models import PlayerCreate
-from models.functions import create_deck, deal_hand, rank_hand, rank_card
+from models.models import Player, Lobby, PlayerCard, PlayerLobby, Bid, DealerCard
+from models.request_models import PlayerCreate, PlayerLogin
+from models.functions import create_deck, rank_hand
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
@@ -29,6 +21,14 @@ db = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
 # Initialize FastAPI
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "https://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.post("/create-player")
 async def create_player(player: PlayerCreate):
@@ -42,29 +42,6 @@ async def create_player(player: PlayerCreate):
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
-        return new_user
-    except IntegrityError:
-        raise HTTPException(status_code=400, detail="Player name already exists")
-    finally:
-        db.close()
-
-
-@app.post("/login")
-async def login(username: str, password: str):
-    try:
-        password = hashlib.sha256(password.encode("utf-8")).hexdigest()
-
-        player = (
-            db.query(Player)
-            .filter(Player.username == username, Player.passwordHash == password)
-            .first()
-        )
-
-        if player is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Player not found, resubmit username or password.",
-            )
 
         return {
             "loginSuccess": True,
@@ -73,6 +50,40 @@ async def login(username: str, password: str):
             "lastname": player.lastname,
             "username": player.username,
             "balance": player.balance,
+        }
+
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="Player name already exists")
+    finally:
+        db.close()
+
+
+@app.post("/login")
+async def login(player: PlayerLogin):
+    try:
+        pwHash = hashlib.sha256(player.password.encode("utf-8")).hexdigest()
+        p = (
+            db.query(Player)
+            .filter(
+                Player.username == player.username,
+                Player.passwordHash == pwHash,
+            )
+            .first()
+        )
+
+        if p is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Player not found, check username or password.",
+            )
+
+        return {
+            "loginSuccess": True,
+            "player": p.id,
+            "firstname": p.firstname,
+            "lastname": p.lastname,
+            "username": p.username,
+            "balance": p.balance,
         }
 
     except Exception as err:
