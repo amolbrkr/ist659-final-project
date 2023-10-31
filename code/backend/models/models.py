@@ -61,7 +61,7 @@ class Lobby(Base):
         self,
         status="WAITING",
         hostPlayerId=None,
-        turn=1,
+        turn=0,
     ):
         self.status = status
         self.hostPlayerId = hostPlayerId
@@ -76,8 +76,8 @@ class PlayerMove(Base):
     lobby_turn = Column(Integer,nullable=False,default=1)
     move_type = Column(String(50), nullable=False)
     amount = Column(Float, nullable=False)
-    winner = Column(String(6), nullable=False)
-    balance_result = (Integer, nullable=False,default=0)
+    winner = Column(String(6), nullable=False, default = 'none')
+    balance_result = Column(Integer, nullable=False,default=0)
     move_time = Column(DateTime)
 
     def __init__(self, lobby_id, move_type, amount, winner,balance_result, move_time=None):

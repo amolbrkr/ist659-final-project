@@ -1,5 +1,5 @@
 import random
-from .models import PlayerCard
+from .models import CardPlayed, Player
 from sqlalchemy.orm import Session
 from typing import List, Tuple
 
@@ -15,7 +15,9 @@ def create_deck():
 
 # Define a function to draw three cards
 def deal_hand(deck):
-    return sorted(deck[:3])
+    hand = sorted(deck[:3])
+    del deck[:3]
+    return hand
 
 
 # define a function to get the rank values of cards
@@ -69,8 +71,8 @@ def get_player_hand(
     db: Session, player_id: int, lobby_id: int
 ) -> List[Tuple[str, str]]:
     query = (
-        db.query(PlayerCard.card_rank, PlayerCard.card_suite)
-        .filter(PlayerCard.player_id == player_id, PlayerCard.lobby_id == lobby_id)
+        db.query(CardPlayed.card_rank, CardPlayed.card_suite)
+        .filter(CardPlayed.player_id == player_id, CardPlayed.lobby_id == lobby_id,entity='Player')
         .all()
     )
 
@@ -79,3 +81,9 @@ def get_player_hand(
 
     hand = [(card_rank, card_suite) for card_rank, card_suite in query]
     return hand
+
+# function to update player balance
+def update_player_balance(player_id, amount,db):
+    player = db.query(Player).filter(Player.id == player_id).first()
+    player.balance += amount
+    db.commit()
