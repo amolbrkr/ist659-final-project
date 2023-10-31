@@ -11,19 +11,62 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import Card from "./card";
+import axios from "axios";
+import { navigate } from "@reach/router";
 
 const UserAuth = () => {
   const [fname, setFname] = useState("");
   const [lname, setLname] = useState("");
   const [uname, setUname] = useState("");
   const [pwd, setPwd] = useState("");
+  const [status, setStatus] = useState("");
 
   const handleLogin = () => {
     console.log(uname, pwd);
+    axios.post("http://localhost:8000/login", {
+      "username": uname,
+      "password": pwd,
+    }, {
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+    })
+      .then((res) => {
+        console.log("Response:", res.data);
+        if (res.data.loginSuccess === true) navigate("/game", {replace: true})
+      })
+      .catch((err) => {
+        console.error(err);
+        setStatus(`Error: ${err.response.data.detail}`);
+      });
   };
 
   const handleSignup = () => {
     console.log(fname, lname, uname, pwd);
+    axios.post("http://localhost:8000/create-player", {
+      "firstname": fname,
+      "lastname": lname,
+      "username": uname,
+      "password": pwd,
+    }, {
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+    })
+      .then((res) => {
+        console.log("Response:", res.data);
+        if (res.status === 200) {
+          setStatus(
+            "Success: Player created, please login using your username.",
+          );
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        setStatus(`Error: ${err.response.data.detail}`);
+      });
   };
 
   return (
@@ -35,15 +78,15 @@ const UserAuth = () => {
       align="flex-start"
       justify="center"
     >
-      <Tabs size="md" isFitted width="40vh" colorScheme="green">
+      <Tabs size="md" isFitted width="45wh" colorScheme="green">
         <TabList>
-          <Tab panelId="login">Login</Tab>
-          <Tab panelId="signup">Sign up</Tab>
+          <Tab>Login</Tab>
+          <Tab>Sign up</Tab>
         </TabList>
         <TabPanels>
           <TabPanel>
             <Flex m="2" justify="center">
-              <Text size="md"></Text>
+              <Text size="md">{status}</Text>
             </Flex>
             <Flex flexDirection="column" alignItems="center">
               <Input
@@ -64,7 +107,7 @@ const UserAuth = () => {
           </TabPanel>
           <TabPanel>
             <Flex m="2" justify="center">
-              <Text size="md">Status text goes here</Text>
+              <Text size="md">{status}</Text>
             </Flex>
             <Flex flexDirection="column" alignItems="center">
               <Input

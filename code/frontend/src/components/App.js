@@ -3,6 +3,7 @@ import { Router } from "@reach/router";
 
 import Header from "./header.js";
 import UserAuth from "./userauth.js";
+import GameUi from "./ui.js";
 
 const theme = extendTheme({
   fonts: {
@@ -28,6 +29,7 @@ const App = () => {
       <Flex justify="center" align="center" height="100vh" bg="#b3ddc9">
         <Router>
           <UserAuth path="/" />
+          <GameUi path="/game" />
         </Router>
       </Flex>
     </ChakraProvider>

@@ -1,80 +1,80 @@
-import React from 'react'
+import React from "react";
 import {
+  Button,
   ChakraProvider,
-  Input,
-  Heading,
   Flex,
+  Heading,
   Image,
-  Button
-} from '@chakra-ui/react'
-import Card from './card'
+  Input,
+} from "@chakra-ui/react";
+import Card from "./card";
 
-const App = () => (
-  <ChakraProvider resetCSS>
-    <Flex flexDirection="column">
+const GameUi = () => (
+  <Flex flexDirection="column">
+    <Flex>
       <Flex>
-        <Flex>
-          {/* <Card /> */}
-          {/* <Image height="100px" width="100px" />
+        {/* <Card /> */}
+        {
+          /* <Image height="100px" width="100px" />
           <Image height="100px" width="100px" ml={10} mr={10} />
-          <Image height="100px" width="100px" /> */}
-        </Flex>
+          <Image height="100px" width="100px" /> */
+        }
       </Flex>
-      <Flex>
-        <Heading display="flex" size="xl" textAlign="center" color="gray.500">
-          Dealer plays with Queen hand or better
+    </Flex>
+    <Flex>
+      <Heading display="flex" size="xl" textAlign="center" color="gray.500">
+        Dealer plays with Queen hand or better
+      </Heading>
+    </Flex>
+    <Flex justifyContent="flex-start" flexDirection="row">
+      <Flex flexDirection="column" width="20%">
+        <Heading
+          as="h1"
+          isTruncated
+          size="lg"
+          display="flex"
+          justifyContent="center"
+          width={11}
+        >
+          Ante
         </Heading>
+        <Input />
       </Flex>
-      <Flex justifyContent="flex-start" flexDirection="row">
-        <Flex flexDirection="column" width="20%">
-          <Heading
-            as="h1"
-            isTruncated
-            size="lg"
+      <Flex flexDirection="column" width="80%">
+        <Heading
+          as="h1"
+          isTruncated
+          size="lg"
+          display="flex"
+          justifyContent="center"
+          width={11}
+        >
+          Hand
+        </Heading>
+        <Flex alignItems="space-between">
+          <Image height="100px" width="100px" />
+          <Image height="100px" width="100px" ml={4} mr={4} />
+          <Image
+            height="100px"
+            width="100px"
             display="flex"
-            justifyContent="center"
-            width={11}
-          >
-            Ante
-          </Heading>
-          <Input />
+            alignItems="center"
+          />
         </Flex>
-        <Flex flexDirection="column" width="80%">
-          <Heading
-            as="h1"
-            isTruncated
-            size="lg"
-            display="flex"
-            justifyContent="center"
-            width={11}
-          >
-            Hand
-          </Heading>
-          <Flex alignItems="space-between">
-            <Image height="100px" width="100px" />
-            <Image height="100px" width="100px" ml={4} mr={4} />
-            <Image
-              height="100px"
-              width="100px"
-              display="flex"
-              alignItems="center"
-            />
-          </Flex>
-          <Flex alignItems="space-between">
-            <Button variant="solid" size="md">
-              Deal
-            </Button>
-            <Button variant="solid" size="md" ml={55} mr={55}>
-              Play
-            </Button>
-            <Button variant="solid" size="md">
-              Fold
-            </Button>
-          </Flex>
+        <Flex alignItems="space-between">
+          <Button variant="solid" size="md">
+            Deal
+          </Button>
+          <Button variant="solid" size="md" ml={55} mr={55}>
+            Play
+          </Button>
+          <Button variant="solid" size="md">
+            Fold
+          </Button>
         </Flex>
       </Flex>
     </Flex>
-  </ChakraProvider>
-)
+  </Flex>
+);
 
-export default App
+export default GameUi;
