@@ -144,7 +144,6 @@ async def create_lobby(hostplayerID: int):
 #     #     )
 
 
-# Define a function to deal three cards
 @app.post("/deal-cards")
 async def deal_cards(lobby_id: int, ante_amount: int):
     current_lobby = db.query(Lobby).filter(Lobby.id == lobby_id).first()
@@ -160,7 +159,6 @@ async def deal_cards(lobby_id: int, ante_amount: int):
     # Update the turn and commit
     new_turn = current_lobby.turn + 1
     current_lobby.turn = new_turn
-    db.commit()
 
     # Create new instance of PlayerMove
     PlayerMove = PlayerMove(
@@ -202,6 +200,8 @@ async def deal_cards(lobby_id: int, ante_amount: int):
         )
         db.add(CardPlayed)
     
+    #commit all changes to the database
+    db.commit()
     # return the info to the front end 
     return {
         "lobby": lobby_id,
@@ -212,12 +212,9 @@ async def deal_cards(lobby_id: int, ante_amount: int):
 
 
 
-
 @app.post("/play")
-async def play(lobby_id: int, player_id: int, action: str, turn: int):
-    player = db.query(Player).filter(Player.id == player_id).first()
-
-    db.commit()
+async def play(lobby_id: int, turn: int):
+    player_id = db.query(Lobby.hostPlayerId).filter(Lobby.id == lobby_id).first()
     # queries to get the player and dealer hand
     player_hand_query = (
         db.query(CardPlayed.card_rank, CardPlayed.card_suite)
@@ -256,23 +253,49 @@ async def play(lobby_id: int, player_id: int, action: str, turn: int):
             outcome = "player_win"
         elif player_high < dealer_high:
             outcome = "dealer_win"
-        else:
-            return {"outcome": outcome}
+        else: 
+            outcome = "tie"
+   
+    ## update the database
+    PlayerMove = db.query(PlayerMove).filter(lobby_id = lobby_id, lobby_turn = turn)
+    ante_amount = PlayerMove.amount
+    if outcome == "player_win":
+        update_player_balance(player_id, 2*ante_amount,db)
+        PlayerMove.winner = 'Player'
+    elif outcome == "tie":
+        update_player_balance(player_id, ante_amount,db)
+        PlayerMove.winner = 'tie'
+    else:
+        PlayerMove.winner = 'Dealer'
+    
+    # commit changes to database
+    db.commit()
+
+    # get new player balance
+    updated_player_balance = db.query(Player.balance).filter(Player.id == player_id).first()
+    
+    # output to frontend
+    return {"outcome": outcome,
+            "balance": updated_player_balance}
     #### HERE NEED TO STORE THE RESULT IN THE DATABASE
 
 @app.post("/fold")
-async def fold(player_id, ante_amount):
+async def fold(lobby_id: int, turn: int):
     # Get the player by ID
-    player = db.query(Player).filter(Player.id == player_id).first()
-
-    if player:
+    player_id = db.query(Lobby.hostPlayerId).filter(Lobby.id == lobby_id).first()
+    PlayerMove = db.query(PlayerMove).filter(lobby_id = lobby_id, lobby_turn = turn)
+    ante_amount = PlayerMove.amount
+    if player_id:
         # Update the player's balance by subtracting the ante amount
-        player.balance -= ante_amount
+        update_player_balance(player_id, ante_amount,db)
 
         # Commit the changes to the database
         db.commit()
-
-        return {"balance": player.balance}
+        
+        # get updated balance
+        updated_player_balance = db.query(Player.balance).filter(Player.id == player_id).first()
+        
+        # output to frontend
+        return {"balance": updated_player_balance}
     else:
         return {"error": "Player not found"}
-    #### HERE NEED TO STORE THE RESULT IN THE DATABASE

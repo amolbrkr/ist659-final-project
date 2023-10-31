@@ -86,4 +86,3 @@ def get_player_hand(
 def update_player_balance(player_id, amount,db):
     player = db.query(Player).filter(Player.id == player_id).first()
     player.balance += amount
-    db.commit()

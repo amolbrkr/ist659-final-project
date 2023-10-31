@@ -77,15 +77,13 @@ class PlayerMove(Base):
     move_type = Column(String(50), nullable=False)
     amount = Column(Float, nullable=False)
     winner = Column(String(6), nullable=False, default = 'none')
-    balance_result = Column(Integer, nullable=False,default=0)
     move_time = Column(DateTime)
 
-    def __init__(self, lobby_id, move_type, amount, winner,balance_result, move_time=None):
+    def __init__(self, lobby_id, move_type, amount, winner, move_time=None):
         self.lobby_id = lobby_id
         self.move_type = move_type
         self.amount = amount
         self.winner = winner
-        self.balance_result = balance_result
         self.move_time = move_time if move_time else datetime.utcnow()
 
 
