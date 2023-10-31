@@ -74,7 +74,7 @@ class PlayerMove(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     lobby_id = Column(Integer, ForeignKey("lobbies.id"), nullable=False)
     lobby_turn = Column(Integer,nullable=False,default=1)
-    move_type = Column(String(50), nullable=False)
+    move_type = Column(String(4), nullable=False)
     amount = Column(Float, nullable=False)
     winner = Column(String(6), nullable=False, default = 'none')
     move_time = Column(DateTime)
@@ -104,35 +104,3 @@ class CardPlayed(Base):
         self.card_suite = card_suite
 
 
-class DealerCard(Base):
-    __tablename__ = "dealerCards"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    lobby_id = Column(Integer, ForeignKey("lobbies.id"), nullable=False)
-    lobby_turn = Column(Integer, ForeignKey("lobbies.turn"), nullable=False)
-    card_rank = Column(String(2), nullable=False)
-    card_suite = Column(String(10), nullable=False)
-
-    def __init__(self, lobby_id, lobby_turn, card_rank, card_suite,entity):
-        self.lobby_id = lobby_id
-        self.lobby_turn = lobby_turn
-        self.card_rank = card_rank
-        self.card_suite = card_suite
-        self.entity = entity
-
-
-class Bid(Base):
-    __tablename__ = "bids"
-
-    bid_id = Column(Integer, primary_key=True, autoincrement=True)
-    player_id = Column(Integer, ForeignKey("players.id"), nullable=False)
-    lobby_id = Column(Integer, ForeignKey("lobbies.id"), nullable=False)
-    bid_type = Column(Enum("Ante", "Play", "Bonus"), nullable=False)
-    amount = Column(DECIMAL(precision=10, scale=2), nullable=False)
-    bid_time = Column(DateTime, server_default=func.now())
-
-
-class TurnCount(Base):
-    __tablename__ = "turn_count"
-    id = Column(Integer, primary_key=True)
-    count = Column(Integer, default=0)

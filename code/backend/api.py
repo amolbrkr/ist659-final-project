@@ -165,6 +165,7 @@ async def deal_cards(lobby_id: int, ante_amount: int):
         lobby_id = lobby_id,
         lobby_turn = new_turn,
         amount = ante_amount,
+        move_type = 'none',
         winner = 'none',
         balance_result = -ante_amount
     )
@@ -174,7 +175,6 @@ async def deal_cards(lobby_id: int, ante_amount: int):
     deck = create_deck()
     lobby_hand = deal_cards(deck)
     player_hand = deal_cards(deck)
-    shuffle(lobby_hand)
 
     #  Update cardsplayed in database
     for card in player_hand:
@@ -267,7 +267,7 @@ async def play(lobby_id: int, turn: int):
         PlayerMove.winner = 'tie'
     else:
         PlayerMove.winner = 'Dealer'
-    
+    PlayerMove.move_type = 'play'
     # commit changes to database
     db.commit()
 
@@ -285,6 +285,7 @@ async def fold(lobby_id: int, turn: int):
     player_id = db.query(Lobby.hostPlayerId).filter(Lobby.id == lobby_id).first()
     PlayerMove = db.query(PlayerMove).filter(lobby_id = lobby_id, lobby_turn = turn)
     ante_amount = PlayerMove.amount
+    PlayerMove.move_type = 'fold'
     if player_id:
         # Update the player's balance by subtracting the ante amount
         update_player_balance(player_id, ante_amount,db)
