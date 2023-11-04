@@ -291,5 +291,6 @@ async def fold(lobby_id: int, turn: int):
 
     db.commit()
     db.close()
+    return {"outcome": "fold_commited"}
 
 
