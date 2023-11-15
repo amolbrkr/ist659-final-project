@@ -16,6 +16,7 @@ class Player(Base):
     passwordHash = Column(String(100))
     balance = Column(Float, default=100)
     createdAt = Column(DateTime, default=datetime.utcnow)
+    turn_count = Column(Integer, default=0)
 
     stats = relationship("PlayerStat", uselist=False, back_populates="player")
 
@@ -140,8 +141,3 @@ class Bid(Base):
     # Define relationships with other tables
     player = relationship("Player", back_populates="bids")
     lobby = relationship("Lobby", back_populates="bids")
-
-class TurnCount(Base):
-    __tablename__ = 'turn_count'
-    id = Column(Integer, primary_key=True)
-    count = Column(Integer, default=0)
