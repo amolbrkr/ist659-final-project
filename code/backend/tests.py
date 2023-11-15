@@ -252,15 +252,6 @@ def test_play_draw():
 # Test case for a valid fold action
 def test_fold_valid():
     # Assuming there's an existing player with ID 1 and ante amount of 10
-<<<<<<< Updated upstream
-    response = client.post("/fold", 
-        json={
-            "player_id": 1, 
-            "ante_amount": 10
-            })
-    assert response.status_code == 200
-    assert response.json() == {"balance": 0}  # Assuming the player's balance becomes 0 after folding
-=======
     response = client.post("/fold", json={"player_id": 1, "ante_amount": 10})
 
     assert response.status_code == 200
@@ -268,26 +259,16 @@ def test_fold_valid():
         "balance": 0
     }  # Assuming the player's balance becomes 0 after folding
 
->>>>>>> Stashed changes
 
 # Test case for folding with insufficient balance
 def test_fold_insufficient_balance():
     # Assuming there's an existing player with ID 2 and ante amount of 100
-<<<<<<< Updated upstream
-    response = client.post("/fold", 
-        json={
-            "player_id": 2, 
-            "ante_amount": 100
-            })
-    assert response.status_code == 400  # Assuming you return a 400 Bad Request when the balance is insufficient
-=======
 
     response = client.post("/fold", json={"player_id": 2, "ante_amount": 100})
 
     assert (
         response.status_code == 400
     )  # Assuming you return a 400 Bad Request when the balance is insufficient
->>>>>>> Stashed changes
     assert response.json() == {"error": "Insufficient balance"}
 
 # Test case for folding by a non-existing player
@@ -302,10 +283,3 @@ def test_fold_player_not_found():
     assert response.status_code == 404  # Assuming you return a 404 Not Found when the player is not found
 =======
 
-    response = client.post("/fold", json={"player_id": 3, "ante_amount": 10})
-
-    assert (
-        response.status_code == 404
-    )  # Assuming you return a 404 Not Found when the player is not found
->>>>>>> Stashed changes
-    assert response.json() == {"error": "Player not found"}

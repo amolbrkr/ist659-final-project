@@ -300,6 +300,54 @@ async def exit(lobby_id: int):
         raise HTTPException(status_code=404, detail="Host player not found")
     (player_id,) = current_player #extract the current_player id
     player_stats = db.query(Player).filter(Player.id == player_id).first()
-    player_stats.gamesPlayed = db.query(func.count('*')).select_from(Lobby).filter(Lobby.hostPlayerId == player_id).scalar()
+    
+    # Update games played
+    player_stats.gamesPlayed = db.query(func.count(Lobby.id)).filter(Lobby.hostPlayerId == player_id).scalar()
+    
+   # Update turns played
+    player_stats.turnsPlayed = db.query(func.sum(Lobby.turn)).filter(Lobby.hostPlayerId == player_id).scalar()
+  
+    # Calculate turns per game ratio
+    if player_stats.gamesPlayed > 0:  # Avoid division by zero
+        player_stats.turnsPerGame = player_stats.turnsPlayed / player_stats.gamesPlayed
+    
+    # Update wins
+    player_stats.wins += db.query(func.count(PlayerMove.id)).filter(
+        PlayerMove.lobby_id == lobby_id, 
+        PlayerMove.winner == 'Player'
+    ).scalar()
+    
+    #update losses
+    player_stats.defeats += db.query(func.count(PlayerMove.id)).filter(
+        PlayerMove.lobby_id == lobby_id, 
+        PlayerMove.winner == 'Dealer'
+    ).scalar()
+
+    #update plays
+    player_stats.plays += db.query(func.count(PlayerMove.id)).filter(
+        PlayerMove.lobby_id == lobby_id, 
+        PlayerMove.move_type == 'play' 
+    ).scalar()
+
+    #update plays
+    player_stats.folds += db.query(func.count(PlayerMove.id)).filter(
+        PlayerMove.lobby_id == lobby_id, 
+        PlayerMove.move_type == 'fold' 
+    ).scalar()
+
+    # Calculate win ratio if games played is more than zero
+    if player_stats.gamesPlayed > 0:
+        player_stats.winRatio = player_stats.wins / player_stats.gamesPlayed
+
+    # Calculate play ratio if games played is more than zero
+    if player_stats.gamesPlayed > 0:
+        player_stats.playRatio = player_stats.plays / player_stats.gamesPlayed
+
+    # Calculate fold ratio if games played is more than zero
+    if player_stats.gamesPlayed > 0:
+        player_stats.foldRatio = player_stats.folds / player_stats.gamesPlayed
+
     db.commit()
     db.close()
+
+    return {"message": "Player stats updated successfully"}
