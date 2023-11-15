@@ -19,36 +19,13 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 
-player_hand_query = session.query(PlayerCard.card_rank, PlayerCard.card_suite).filter(
-    PlayerCard.player_id == 1,
-    PlayerCard.lobby_id == 1
-).all()
-player_hand = [(card_rank, card_suite) for card_rank, card_suite in player_hand_query]
+# query = session.query(Player).filter(Player.id == 1).first()
+query = session.query(func.count('*')).select_from(Lobby).filter(Lobby.hostPlayerId == 1).scalar()
 
-dealer_hand_query = session.query(DealerCard.card_rank, DealerCard.card_suite).filter(
-    DealerCard.lobby_id == 1
-).all()
-dealer_hand = [(card_rank, card_suite) for card_rank, card_suite in dealer_hand_query]
-print(dealer_hand_query)
-print(player_hand)
-print(dealer_hand)
 
-player_rank, player_high = rank_hand(player_hand)
-dealer_rank, dealer_high = rank_hand(dealer_hand)
-
-print(player_rank)
-print(dealer_rank)
-
-outcome = None
-if player_rank > dealer_rank:
-    outcome = "player_win"
-elif player_rank < dealer_rank:
-    outcome = "dealer_win"
-else:
-    if player_high > dealer_high:
-        outcome = "player_win"
-    elif player_high < dealer_high:
-        outcome = "dealer_win"
-    else:
-        outcome = "dealer_win"
-print(outcome)
+print(query)
+# for attr, value in player_stats.__dict__.items():
+#     if not attr.startswith('_'):  # This will filter out SQLAlchemy's internal attributes
+#             print(f"{attr}: {value}")
+#     else:
+#         print("No player found with ID 1")

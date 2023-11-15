@@ -28,14 +28,14 @@ class Player(Base):
     createdAt = Column(DateTime, default=datetime.utcnow)
     gamesPlayed = Column(Integer, default=0)
     turnsPlayed = Column(Integer, default=0)
-    turnsPerGame = Column(Float(4,4))
+    turnsPerGame = Column(Float(4,4), default=0)
     wins = Column(Integer, default=0)
     defeats = Column(Integer, default=0)
     plays = Column(Integer, default=0)
     folds = Column(Integer, default=0)
-    winRatio = Column(Float(1,4))
-    playRatio = Column(Float(1,4))
-    foldRatio = Column(Float(1,4))
+    winRatio = Column(Float(1,4),default=0)
+    playRatio = Column(Float(1,4),default=0)
+    foldRatio = Column(Float(1,4),default=0)
     
     def __init__(
         self, firstname, lastname, username, passwordHash, balance=100.0, createdAt=None
