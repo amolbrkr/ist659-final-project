@@ -1,12 +1,12 @@
 import random
-from .models import CardPlayed, Player
 from sqlalchemy.orm import Session
 from typing import List, Tuple
+from models.models import CardPlayed, Player
 
 
 # Define a function to create and return a deck of cards
 def create_deck():
-    ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
+    ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"]
     suits = ["Hearts", "Diamonds", "Clubs", "Spades"]
     deck = [[rank, suit] for rank in ranks for suit in suits]
     random.shuffle(deck)
@@ -15,7 +15,7 @@ def create_deck():
 
 # Define a function to draw three cards
 def deal_hand(deck):
-    hand = sorted(deck[:3])
+    hand = deck[:3]
     del deck[:3]
     return hand
 
@@ -31,15 +31,13 @@ def rank_card(card_rank):
         "7": 7,
         "8": 8,
         "9": 9,
-        "10": 10,
+        "T": 10,
         "J": 11,
         "Q": 12,
         "K": 13,
         "A": 14,
     }
-    return rank_map.get(
-        card_rank.upper(), 0
-    )  # Convert to uppercase to make it case-insensitive, return 0 if not found
+    return rank_map.get(card_rank, 0)  # Using the first character as the key, return 0 if not found.
 
 
 # Define a funtion to rank hand
@@ -86,3 +84,12 @@ def get_player_hand(
 def update_player_balance(player_id, amount,db):
     player = db.query(Player).filter(Player.id == player_id).first()
     player.balance += amount
+
+
+# hand = deal_hand(create_deck())
+
+# # hand = [['K', 'Diamonds'], ['A', 'Diamonds'], ['K', 'Clubs']]
+# print(hand)
+
+# rank=(rank_hand(hand))
+# print(rank)

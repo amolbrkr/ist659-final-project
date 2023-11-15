@@ -79,8 +79,9 @@ class PlayerMove(Base):
     winner = Column(String(6), nullable=False, default = 'none')
     move_time = Column(DateTime)
 
-    def __init__(self, lobby_id, move_type, amount, winner, move_time=None):
+    def __init__(self, lobby_id, move_type, amount, winner, lobby_turn, move_time=None):
         self.lobby_id = lobby_id
+        self.lobby_turn = lobby_turn
         self.move_type = move_type
         self.amount = amount
         self.winner = winner
@@ -97,10 +98,11 @@ class CardPlayed(Base):
     card_suite = Column(String(10), nullable=False)
     entity = Column(String(6), nullable=False)
 
-    def __init__(self, lobby_id, lobby_turn, card_rank, card_suite):
+    def __init__(self, lobby_id, lobby_turn, card_rank, card_suite, entity):
         self.lobby_id = lobby_id
         self.lobby_turn = lobby_turn
         self.card_rank = card_rank
         self.card_suite = card_suite
+        self.entity = entity
 
 
