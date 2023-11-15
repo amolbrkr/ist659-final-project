@@ -285,12 +285,21 @@ async def fold(lobby_id: int, turn: int):
     if not current_player:
         raise HTTPException(status_code=404, detail="Host player not found")
     (player_id,) = current_player #extract the current_player id
-    current_PlayerMove = db.query(PlayerMove).filter(lobby_id = lobby_id, lobby_turn = turn)
+    current_PlayerMove = db.query(PlayerMove).filter(PlayerMove.lobby_id == lobby_id, PlayerMove.lobby_turn == turn)
     current_PlayerMove.move_type = 'fold'
     current_PlayerMove.winner = 'fold'
-
     db.commit()
     db.close()
     return {"outcome": "fold_commited"}
 
-
+@app.post("/exit")
+async def exit(lobby_id: int):
+    # when exiting the lobby we update the statistics in the player table
+    current_player = db.query(Lobby.hostPlayerId).filter(Lobby.id == lobby_id).first()
+    if not current_player:
+        raise HTTPException(status_code=404, detail="Host player not found")
+    (player_id,) = current_player #extract the current_player id
+    player_stats = db.query(Player).filter(Player.id == player_id).first()
+    player_stats.gamesPlayed = db.query(func.count('*')).select_from(Lobby).filter(Lobby.hostPlayerId == player_id).scalar()
+    db.commit()
+    db.close()
