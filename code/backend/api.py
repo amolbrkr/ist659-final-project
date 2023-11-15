@@ -5,7 +5,7 @@ from models.request_models import PlayerCreate, PlayerLogin
 from models.functions import create_deck, rank_hand, update_player_balance, deal_hand
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
 from random import shuffle
