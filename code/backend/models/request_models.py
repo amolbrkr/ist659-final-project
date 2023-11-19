@@ -7,3 +7,7 @@ class PlayerCreate(BaseModel):
     username: str
     password: str
 
+
+class PlayerLogin(BaseModel):
+    username: str
+    password: str

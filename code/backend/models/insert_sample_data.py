@@ -10,6 +10,7 @@ os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(script_directory))))
 
 
 DATABASE_URL = "sqlite:///database/poker"  # Replace with your database URL
+engine = create_engine(DATABASE_URL, echo=True)
 Session = sessionmaker(bind=engine)
 session = Session()
 
