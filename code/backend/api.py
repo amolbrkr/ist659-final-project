@@ -152,8 +152,6 @@ async def create_lobby(hostplayerID: int):
         # Close the database connection
         db.close()
 
->>>>>>> e8cc3e04834b6a43a87f990fac1d811afa582792
-
 @app.post("/deal-cards")
 async def deal_cards(lobby_id: int, ante_amount: int):
     try:
