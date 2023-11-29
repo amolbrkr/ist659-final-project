@@ -2,7 +2,7 @@ if not exists(select * from sys.databases where name='poker')
 	create database poker
 GO
 
-use poker
+--use poker --WARNING: AZURE SQL SERVED DOES NOT SUPPORT USE
 GO
 
 --DOWN
