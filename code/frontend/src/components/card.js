@@ -8,8 +8,10 @@ const f = (x) => {
 
 const Card = ({ number, suit }) => {
   const style = {
-    width: "calc(100vw/14)",
-    margin: "2px",
+    width: "calc(100vw/12)",
+    margin: "8px",
+    borderRadius: "5px",
+    boxShadow: "0px 1px 4px 1px rgba(100, 100, 100, 0.25)"
   };
   const [imgUrl, setImgUrl] = React.useState("");
   React.useEffect(() => {
@@ -19,8 +21,9 @@ const Card = ({ number, suit }) => {
       )}${suit}.svg`
     );
   }, [number, suit]);
+
   return imgUrl === "" ? null : (
-    <img alt="text" onClick={() => setImgUrl("")} style={style} src={imgUrl} />
+    <img alt="text" style={style} src={imgUrl} />
   );
 };
 

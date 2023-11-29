@@ -13,7 +13,13 @@ import Card from "../components/card.js";
 const GameUi = () => (
   <Flex p={4} width="100vw" minHeight="80vh">
     <Flex width="20%" flexDirection="column">
-      <Flex m={4} flexDirection="column" background="white" borderRadius="5px">
+      <Flex
+        m={4}
+        flexDirection="column"
+        background="white"
+        borderRadius="5px"
+        boxShadow="md"
+      >
         <Flex justifyContent="space-between" p={2}>
           <Text fontWeight="bold">BALANCE</Text>
           <Link>Reset</Link>
@@ -22,7 +28,13 @@ const GameUi = () => (
           $1,000
         </Heading>
       </Flex>
-      <Flex m={4} flexDirection="column" background="white" borderRadius="5px">
+      <Flex
+        m={4}
+        flexDirection="column"
+        background="white"
+        borderRadius="5px"
+        boxShadow="md"
+      >
         <Flex justifyContent="space-between" p={2}>
           <Text fontWeight="bold">PLAYER STATS</Text>
         </Flex>
@@ -154,12 +166,10 @@ const GameUi = () => (
                 flex={0.2}
                 type="number"
                 background="white"
-                border="10px"
-                borderColor="orange.300"
-                borderRadius="8px"
+                boxShadow="outline"
               />
             </Flex>
-            <Flex
+            {/* <Flex
               position="relative"
               width="90%"
               justifyContent="center"
@@ -173,7 +183,7 @@ const GameUi = () => (
                 backgroundColor="white"
                 zIndex="2"
               />
-            </Flex>
+            </Flex> */}
             <Flex m="2" alignItems="center">
               <Button w="100px" variant="solid" size="md" m={1}>
                 Deal
