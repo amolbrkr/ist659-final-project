@@ -30,11 +30,35 @@ app.add_middleware(
 )
 
 
+<<<<<<< HEAD
+import hashlib
+from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException
+
+import hashlib
+from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException
+
+@app.post("/create-player")
+async def create_player(player: PlayerCreate):
+    try:
+        with db.begin():
+            new_user = Player(
+                firstname=player.firstname,
+                lastname=player.lastname,
+                username=player.username,
+                passwordHash=hashlib.sha256(player.password.encode("utf-8")).hexdigest(),
+            )
+            db.add(new_user)
+            db.commit()
+            db.refresh(new_user)
+=======
 @app.post("/create-lobby")
 async def create_lobby(hostplayerID: int):
     player_list = [x[0] for x in db.query(Player.id).all()]
     if hostplayerID not in player_list:
         raise HTTPException(status_code=404, detail="Player does not exist.")
+>>>>>>> 7a17966e755830a019f98ad6c3ec35bc82a989a4
 
     try:
         # Assuming hostplayerID is the ID of the host player
@@ -55,17 +79,28 @@ async def create_lobby(hostplayerID: int):
     except IntegrityError as e:
         # Check if the error is related to a unique constraint violation
         if "duplicate key" in str(e):
+<<<<<<< HEAD
+            raise HTTPException(status_code=400, detail="Player name already exists")
+=======
             raise HTTPException(status_code=409, detail="Duplicate lobby creation")
+>>>>>>> 7a17966e755830a019f98ad6c3ec35bc82a989a4
         else:
             # Handle other database-related errors
             raise HTTPException(status_code=500, detail="Database error")
 
+<<<<<<< HEAD
+    except Exception as e:
+        # Handle other unexpected errors
+        raise HTTPException(status_code=500, detail="Unexpected error")
+    finally: 
+=======
     except Exception as err:
         # Handle other unexpected errors
         raise HTTPException(status_code=500, detail=f"Something went wrong, error: {str(err)}")
 
     finally:
         # Close the database connection
+>>>>>>> 7a17966e755830a019f98ad6c3ec35bc82a989a4
         db.close()
 
 
@@ -97,10 +132,20 @@ async def login(player: PlayerLogin):
             "balance": p.balance,
         }
 
+    except IntegrityError as e:
+        # Check if the error is related to a unique constraint violation or other database-related issues
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
     except Exception as err:
+        # Handle other unexpected errors
         raise HTTPException(
             status_code=500, detail=f"Something went wrong, error: {str(err)}"
         )
+
+    finally:
+        # Close the database connection
+        db.close()
+
 
 
 <<<<<<< HEAD
@@ -116,22 +161,35 @@ async def create_lobby(hostplayerID: int):
         new_lobby = Lobby(
             status="WAITING",  # Set the initial status
             hostPlayerId=hostplayerID,  # Set the host player's ID
+<<<<<<< HEAD
+            turn=0
+=======
             turn=0,
+>>>>>>> e8cc3e04834b6a43a87f990fac1d811afa582792
         )
         db.add(new_lobby)
         db.commit()
-        print(vars(new_lobby))
+
         new_lobby = db.query(Lobby).order_by(Lobby.id.desc()).first()
         return {
             "lobby.id": new_lobby.id,
             "lobby.turn": 0,
         }
 
+    except IntegrityError as e:
+        # Check if the error is related to a unique constraint violation
+        if "duplicate key" in str(e):
+            raise HTTPException(status_code=409, detail="Duplicate lobby creation")
+        else:
+            # Handle other database-related errors
+            raise HTTPException(status_code=500, detail="Database error")
+
     except Exception as err:
-        raise HTTPException(
-            status_code=500, detail=f"Something went wrong, error: {str(err)}"
-        )
+        # Handle other unexpected errors
+        raise HTTPException(status_code=500, detail=f"Something went wrong, error: {str(err)}")
+
     finally:
+        # Close the database connection
         db.close()
 
 >>>>>>> e8cc3e04834b6a43a87f990fac1d811afa582792
@@ -521,8 +579,28 @@ async def exit_lobby(lobby_id: int):
         if not player_stats:
             raise HTTPException(status_code=404, detail="Player statistics not found")
 
+<<<<<<< HEAD
+        player_stats.gamesPlayed = db.query(func.count('*')).select_from(Lobby).filter(Lobby.hostPlayerId == player_id).scalar()
+        db.commit()
+
+        # Close the database connection
+        db.close()
+
+    except IntegrityError as e:
+        # Check if the error is related to a unique constraint violation or other database-related issues
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+    except Exception as err:
+        # Handle other unexpected errors
+        raise HTTPException(status_code=500, detail=f"Something went wrong, error: {str(err)}")
+
+    finally:
+        # Close the database connection
+        db.close()
+=======
         # Update games played
         player_stats.gamesPlayed = db.query(func.count(Lobby.id)).filter(Lobby.hostPlayerId == player_id).scalar()
+>>>>>>> 7a17966e755830a019f98ad6c3ec35bc82a989a4
 =======
 async def exit(lobby_id: int):
     # when exiting the lobby we update the statistics in the player table
