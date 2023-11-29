@@ -104,15 +104,15 @@ async def create_lobby(hostplayerID: int):
         new_lobby = Lobby(
             status="WAITING",  # Set the initial status
             hostPlayerId=hostplayerID,  # Set the host player's ID
-            turn = 0
+            turn=0,
         )
         db.add(new_lobby)
         db.commit()
         print(vars(new_lobby))
         new_lobby = db.query(Lobby).order_by(Lobby.id.desc()).first()
         return {
-            "lobby.id" : new_lobby.id,
-            "lobby.turn" : 0,
+            "lobby.id": new_lobby.id,
+            "lobby.turn": 0,
         }
 
     except Exception as err:
@@ -121,7 +121,6 @@ async def create_lobby(hostplayerID: int):
         )
     finally:
         db.close()
-
 
 
 @app.post("/deal-cards")
@@ -133,14 +132,14 @@ async def deal_cards(lobby_id: int, ante_amount: int):
     player = db.query(Lobby.hostPlayerId).filter(Lobby.id == lobby_id).first()
     if not player:
         raise HTTPException(status_code=404, detail="Host player not found")
-    (player_id,) = player #extract the player id
+    (player_id,) = player  # extract the player id
 
     # update balance in player table
     current_player = db.query(Player).filter(Player.id == player_id).first()
     if current_player.balance < ante_amount:
         return {"error": "Not enough funds"}
     else:
-        update_player_balance(player_id, -ante_amount,db)
+        update_player_balance(player_id, -ante_amount, db)
 
     # Update the turn and commit
     new_turn = current_lobby.turn + 1
@@ -148,11 +147,11 @@ async def deal_cards(lobby_id: int, ante_amount: int):
 
     # Create new instance of PlayerMove
     new_PlayerMove = PlayerMove(
-        lobby_id = lobby_id,
-        lobby_turn = new_turn,
-        amount = ante_amount,
-        move_type = 'none',
-        winner = 'none'
+        lobby_id=lobby_id,
+        lobby_turn=new_turn,
+        amount=ante_amount,
+        move_type="none",
+        winner="none",
     )
     db.add(new_PlayerMove)
 
@@ -165,37 +164,38 @@ async def deal_cards(lobby_id: int, ante_amount: int):
     for card in player_hand:
         card_rank = card[0]
         card_suit = card[1]
-        player_CardPlayed=CardPlayed(
-            lobby_id = lobby_id,
-            lobby_turn = new_turn,
-            card_rank = card_rank,
-            card_suite = card_suit,
-            entity = 'Player'
+        player_CardPlayed = CardPlayed(
+            lobby_id=lobby_id,
+            lobby_turn=new_turn,
+            card_rank=card_rank,
+            card_suite=card_suit,
+            entity="Player",
         )
         db.add(player_CardPlayed)
     for card in lobby_hand:
         card_rank = card[0]
         card_suit = card[1]
-        dealer_CardPlayed=CardPlayed(
-            lobby_id = lobby_id,
-            lobby_turn = new_turn,
-            card_rank = card_rank,
-            card_suite = card_suit,
-            entity = 'Dealer'
+        dealer_CardPlayed = CardPlayed(
+            lobby_id=lobby_id,
+            lobby_turn=new_turn,
+            card_rank=card_rank,
+            card_suite=card_suit,
+            entity="Dealer",
         )
         db.add(dealer_CardPlayed)
-    
-    #commit all changes to the database
+
+    # commit all changes to the database
     db.commit()
-    # return the info to the front end 
+    # return the info to the front end
     return {
         "lobby": lobby_id,
         "turn": new_turn,
         "lobby_hand": lobby_hand,
         "player_hand": player_hand,
     }
-db.close()
 
+
+db.close()
 
 
 @app.post("/play")
@@ -203,14 +203,14 @@ async def play(lobby_id: int, turn: int):
     current_player = db.query(Lobby.hostPlayerId).filter(Lobby.id == lobby_id).first()
     if not current_player:
         raise HTTPException(status_code=404, detail="Host player not found")
-    (player_id,) = current_player #extract the current_player id
+    (player_id,) = current_player  # extract the current_player id
     # queries to get the current_player and dealer hand
     player_hand_query = (
         db.query(CardPlayed.card_rank, CardPlayed.card_suite)
         .filter(
             CardPlayed.lobby_id == lobby_id,
             CardPlayed.lobby_turn == turn,
-            CardPlayed.entity == 'Player'
+            CardPlayed.entity == "Player",
         )
         .all()
     )
@@ -223,10 +223,10 @@ async def play(lobby_id: int, turn: int):
     dealer_hand_query = (
         db.query(CardPlayed.card_rank, CardPlayed.card_suite)
         .filter(
-            CardPlayed.lobby_id == lobby_id, 
+            CardPlayed.lobby_id == lobby_id,
             CardPlayed.lobby_turn == turn,
-            CardPlayed.entity == 'Dealer'
-            )
+            CardPlayed.entity == "Dealer",
+        )
         .all()
     )
     if not dealer_hand_query:
@@ -250,33 +250,39 @@ async def play(lobby_id: int, turn: int):
             outcome = "player_win"
         elif player_high < dealer_high:
             outcome = "dealer_win"
-        else: 
+        else:
             outcome = "tie"
-   
+
     ## update the database
-    current_PlayerMove = db.query(PlayerMove).filter(PlayerMove.lobby_id == lobby_id, PlayerMove.lobby_turn == turn).first()
+    current_PlayerMove = (
+        db.query(PlayerMove)
+        .filter(PlayerMove.lobby_id == lobby_id, PlayerMove.lobby_turn == turn)
+        .first()
+    )
     current_player = db.query(Player).filter(Player.id == player_id).first()
     ante_amount = current_PlayerMove.amount
     if outcome == "player_win":
-        current_player.balance += 2*ante_amount
-        current_PlayerMove.winner = 'Player'
+        current_player.balance += 2 * ante_amount
+        current_PlayerMove.winner = "Player"
     elif outcome == "tie":
-        current_player.balance += 2*ante_amount
-        current_PlayerMove.winner = 'tie'
+        current_player.balance += 2 * ante_amount
+        current_PlayerMove.winner = "tie"
     else:
-        current_PlayerMove.winner = 'Dealer'
-    current_PlayerMove.move_type = 'play'
+        current_PlayerMove.winner = "Dealer"
+    current_PlayerMove.move_type = "play"
     # commit changes to database
     db.commit()
 
     # get new player balance
-    updated_player_balance = db.query(Player.balance).filter(Player.id == player_id).first()
+    updated_player_balance = (
+        db.query(Player.balance).filter(Player.id == player_id).first()
+    )
     (player_balance,) = updated_player_balance
 
     db.close()
     # output to frontend
-    return {"outcome": outcome,
-            "balance": player_balance}
+    return {"outcome": outcome, "balance": player_balance}
+
 
 @app.post("/fold")
 async def fold(lobby_id: int, turn: int):
@@ -284,13 +290,16 @@ async def fold(lobby_id: int, turn: int):
     current_player = db.query(Lobby.hostPlayerId).filter(Lobby.id == lobby_id).first()
     if not current_player:
         raise HTTPException(status_code=404, detail="Host player not found")
-    (player_id,) = current_player #extract the current_player id
-    current_PlayerMove = db.query(PlayerMove).filter(PlayerMove.lobby_id == lobby_id, PlayerMove.lobby_turn == turn)
-    current_PlayerMove.move_type = 'fold'
-    current_PlayerMove.winner = 'fold'
+    (player_id,) = current_player  # extract the current_player id
+    current_PlayerMove = db.query(PlayerMove).filter(
+        PlayerMove.lobby_id == lobby_id, PlayerMove.lobby_turn == turn
+    )
+    current_PlayerMove.move_type = "fold"
+    current_PlayerMove.winner = "fold"
     db.commit()
     db.close()
     return {"outcome": "fold_commited"}
+
 
 @app.post("/exit")
 async def exit(lobby_id: int):
@@ -298,42 +307,50 @@ async def exit(lobby_id: int):
     current_player = db.query(Lobby.hostPlayerId).filter(Lobby.id == lobby_id).first()
     if not current_player:
         raise HTTPException(status_code=404, detail="Host player not found")
-    (player_id,) = current_player #extract the current_player id
+    (player_id,) = current_player  # extract the current_player id
     player_stats = db.query(Player).filter(Player.id == player_id).first()
-    
+
     # Update games played
-    player_stats.gamesPlayed = db.query(func.count(Lobby.id)).filter(Lobby.hostPlayerId == player_id).scalar()
-    
-   # Update turns played
-    player_stats.turnsPlayed = db.query(func.sum(Lobby.turn)).filter(Lobby.hostPlayerId == player_id).scalar()
-  
+    player_stats.gamesPlayed = (
+        db.query(func.count(Lobby.id)).filter(Lobby.hostPlayerId == player_id).scalar()
+    )
+
+    # Update turns played
+    player_stats.turnsPlayed = (
+        db.query(func.sum(Lobby.turn)).filter(Lobby.hostPlayerId == player_id).scalar()
+    )
+
     # Calculate turns per game ratio
     if player_stats.gamesPlayed > 0:  # Avoid division by zero
         player_stats.turnsPerGame = player_stats.turnsPlayed / player_stats.gamesPlayed
-    
+
     # Update wins
-    player_stats.wins += db.query(func.count(PlayerMove.id)).filter(
-        PlayerMove.lobby_id == lobby_id, 
-        PlayerMove.winner == 'Player'
-    ).scalar()
-    
-    #update losses
-    player_stats.defeats += db.query(func.count(PlayerMove.id)).filter(
-        PlayerMove.lobby_id == lobby_id, 
-        PlayerMove.winner == 'Dealer'
-    ).scalar()
+    player_stats.wins += (
+        db.query(func.count(PlayerMove.id))
+        .filter(PlayerMove.lobby_id == lobby_id, PlayerMove.winner == "Player")
+        .scalar()
+    )
 
-    #update plays
-    player_stats.plays += db.query(func.count(PlayerMove.id)).filter(
-        PlayerMove.lobby_id == lobby_id, 
-        PlayerMove.move_type == 'play' 
-    ).scalar()
+    # update losses
+    player_stats.defeats += (
+        db.query(func.count(PlayerMove.id))
+        .filter(PlayerMove.lobby_id == lobby_id, PlayerMove.winner == "Dealer")
+        .scalar()
+    )
 
-    #update plays
-    player_stats.folds += db.query(func.count(PlayerMove.id)).filter(
-        PlayerMove.lobby_id == lobby_id, 
-        PlayerMove.move_type == 'fold' 
-    ).scalar()
+    # update plays
+    player_stats.plays += (
+        db.query(func.count(PlayerMove.id))
+        .filter(PlayerMove.lobby_id == lobby_id, PlayerMove.move_type == "play")
+        .scalar()
+    )
+
+    # update plays
+    player_stats.folds += (
+        db.query(func.count(PlayerMove.id))
+        .filter(PlayerMove.lobby_id == lobby_id, PlayerMove.move_type == "fold")
+        .scalar()
+    )
 
     # Calculate win ratio if games played is more than zero
     if player_stats.gamesPlayed > 0:
