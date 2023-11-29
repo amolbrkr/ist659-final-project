@@ -103,36 +103,6 @@ async def login(player: PlayerLogin):
         )
 
 
-@app.post("/create-lobby")
-async def create_lobby(hostplayerID: int):
-    player_list = [x[0] for x in db.query(Player.id).all()]
-    if hostplayerID not in player_list:
-        raise HTTPException(status_code=404, detail="Player does not exist.")
-
-    try:
-        # Assuming hostplayerID is the ID of the host player
-        new_lobby = Lobby(
-            status="WAITING",  # Set the initial status
-            hostPlayerId=hostplayerID,  # Set the host player's ID
-            turn = 0
-        )
-        db.add(new_lobby)
-        db.commit()
-        print(vars(new_lobby))
-        new_lobby = db.query(Lobby).order_by(Lobby.id.desc()).first()
-        return {
-            "lobby.id" : new_lobby.id,
-            "lobby.turn" : 0,
-        }
-
-    except Exception as err:
-        raise HTTPException(
-            status_code=500, detail=f"Something went wrong, error: {str(err)}"
-        )
-    finally:
-        db.close()
-
-
 
 @app.post("/deal-cards")
 async def deal_cards(lobby_id: int, ante_amount: int):
