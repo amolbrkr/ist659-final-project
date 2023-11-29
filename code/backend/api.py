@@ -30,6 +30,7 @@ app.add_middleware(
 )
 
 
+<<<<<<< HEAD
 import hashlib
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
@@ -51,29 +52,55 @@ async def create_player(player: PlayerCreate):
             db.add(new_user)
             db.commit()
             db.refresh(new_user)
+=======
+@app.post("/create-lobby")
+async def create_lobby(hostplayerID: int):
+    player_list = [x[0] for x in db.query(Player.id).all()]
+    if hostplayerID not in player_list:
+        raise HTTPException(status_code=404, detail="Player does not exist.")
+>>>>>>> 7a17966e755830a019f98ad6c3ec35bc82a989a4
 
-        new_user = db.query(Player).filter(Player.username == new_user.username).first()
+    try:
+        # Assuming hostplayerID is the ID of the host player
+        new_lobby = Lobby(
+            status="WAITING",  # Set the initial status
+            hostPlayerId=hostplayerID,  # Set the host player's ID
+            turn=0
+        )
+        db.add(new_lobby)
+        db.commit()
+
+        new_lobby = db.query(Lobby).order_by(Lobby.id.desc()).first()
         return {
-            "loginSuccess": True,
-            "player": new_user.id,
-            "firstname": new_user.firstname,
-            "lastname": new_user.lastname,
-            "username": new_user.username,
-            "balance": new_user.balance,
+            "lobby.id": new_lobby.id,
+            "lobby.turn": 0,
         }
 
     except IntegrityError as e:
         # Check if the error is related to a unique constraint violation
         if "duplicate key" in str(e):
+<<<<<<< HEAD
             raise HTTPException(status_code=400, detail="Player name already exists")
+=======
+            raise HTTPException(status_code=409, detail="Duplicate lobby creation")
+>>>>>>> 7a17966e755830a019f98ad6c3ec35bc82a989a4
         else:
             # Handle other database-related errors
             raise HTTPException(status_code=500, detail="Database error")
 
+<<<<<<< HEAD
     except Exception as e:
         # Handle other unexpected errors
         raise HTTPException(status_code=500, detail="Unexpected error")
     finally: 
+=======
+    except Exception as err:
+        # Handle other unexpected errors
+        raise HTTPException(status_code=500, detail=f"Something went wrong, error: {str(err)}")
+
+    finally:
+        # Close the database connection
+>>>>>>> 7a17966e755830a019f98ad6c3ec35bc82a989a4
         db.close()
 
 
@@ -121,6 +148,8 @@ async def login(player: PlayerLogin):
 
 
 
+<<<<<<< HEAD
+=======
 @app.post("/create-lobby")
 async def create_lobby(hostplayerID: int):
     player_list = [x[0] for x in db.query(Player.id).all()]
@@ -163,6 +192,7 @@ async def create_lobby(hostplayerID: int):
         # Close the database connection
         db.close()
 
+>>>>>>> e8cc3e04834b6a43a87f990fac1d811afa582792
 
 @app.post("/deal-cards")
 async def deal_cards(lobby_id: int, ante_amount: int):
@@ -549,6 +579,7 @@ async def exit_lobby(lobby_id: int):
         if not player_stats:
             raise HTTPException(status_code=404, detail="Player statistics not found")
 
+<<<<<<< HEAD
         player_stats.gamesPlayed = db.query(func.count('*')).select_from(Lobby).filter(Lobby.hostPlayerId == player_id).scalar()
         db.commit()
 
@@ -566,6 +597,10 @@ async def exit_lobby(lobby_id: int):
     finally:
         # Close the database connection
         db.close()
+=======
+        # Update games played
+        player_stats.gamesPlayed = db.query(func.count(Lobby.id)).filter(Lobby.hostPlayerId == player_id).scalar()
+>>>>>>> 7a17966e755830a019f98ad6c3ec35bc82a989a4
 =======
 async def exit(lobby_id: int):
     # when exiting the lobby we update the statistics in the player table
@@ -616,21 +651,67 @@ async def exit(lobby_id: int):
         .filter(PlayerMove.lobby_id == lobby_id, PlayerMove.move_type == "fold")
         .scalar()
     )
+>>>>>>> e8cc3e04834b6a43a87f990fac1d811afa582792
 
-    # Calculate win ratio if games played is more than zero
-    if player_stats.gamesPlayed > 0:
-        player_stats.winRatio = player_stats.wins / player_stats.gamesPlayed
+        # Update turns played
+        player_stats.turnsPlayed = db.query(func.sum(Lobby.turn)).filter(Lobby.hostPlayerId == player_id).scalar()
 
-    # Calculate play ratio if games played is more than zero
-    if player_stats.gamesPlayed > 0:
-        player_stats.playRatio = player_stats.plays / player_stats.gamesPlayed
+        # Calculate turns per game ratio
+        if player_stats.gamesPlayed > 0:  # Avoid division by zero
+            player_stats.turnsPerGame = player_stats.turnsPlayed / player_stats.gamesPlayed
 
-    # Calculate fold ratio if games played is more than zero
-    if player_stats.gamesPlayed > 0:
-        player_stats.foldRatio = player_stats.folds / player_stats.gamesPlayed
+        # Update wins
+        player_stats.wins += db.query(func.count(PlayerMove.id)).filter(
+            PlayerMove.lobby_id == lobby_id,
+            PlayerMove.winner == 'Player'
+        ).scalar()
 
-    db.commit()
-    db.close()
+        # Update defeats
+        player_stats.defeats += db.query(func.count(PlayerMove.id)).filter(
+            PlayerMove.lobby_id == lobby_id,
+            PlayerMove.winner == 'Dealer'
+        ).scalar()
 
+<<<<<<< HEAD
+        # Update plays
+        player_stats.plays += db.query(func.count(PlayerMove.id)).filter(
+            PlayerMove.lobby_id == lobby_id,
+            PlayerMove.move_type == 'play'
+        ).scalar()
+
+        # Update folds
+        player_stats.folds += db.query(func.count(PlayerMove.id)).filter(
+            PlayerMove.lobby_id == lobby_id,
+            PlayerMove.move_type == 'fold'
+        ).scalar()
+
+        # Calculate win ratio if games played is more than zero
+        if player_stats.gamesPlayed > 0:
+            player_stats.winRatio = player_stats.wins / player_stats.gamesPlayed
+
+        # Calculate play ratio if games played is more than zero
+        if player_stats.gamesPlayed > 0:
+            player_stats.playRatio = player_stats.plays / player_stats.gamesPlayed
+
+        # Calculate fold ratio if games played is more than zero
+        if player_stats.gamesPlayed > 0:
+            player_stats.foldRatio = player_stats.folds / player_stats.gamesPlayed
+
+        db.commit()
+
+        return {"message": "Player stats updated successfully"}
+
+    except IntegrityError as e:
+        # Check if the error is related to a unique constraint violation or other database-related issues
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+    except Exception as err:
+        # Handle other unexpected errors
+        raise HTTPException(status_code=500, detail=f"Something went wrong, error: {str(err)}")
+
+    finally:
+        # Close the database connection
+        db.close()
+=======
     return {"message": "Player stats updated successfully"}
 >>>>>>> e8cc3e04834b6a43a87f990fac1d811afa582792
