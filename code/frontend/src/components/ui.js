@@ -169,7 +169,8 @@ const GameUi = () => (
                 boxShadow="outline"
               />
             </Flex>
-            {/* <Flex
+            {
+              /* <Flex
               position="relative"
               width="90%"
               justifyContent="center"
@@ -183,7 +184,8 @@ const GameUi = () => (
                 backgroundColor="white"
                 zIndex="2"
               />
-            </Flex> */}
+            </Flex> */
+            }
             <Flex m="2" alignItems="center">
               <Button w="100px" variant="solid" size="md" m={1}>
                 Deal
