@@ -239,12 +239,11 @@ def test_fold_insufficient_balance():
 # Test case for folding by a non-existing player
 def test_fold_player_not_found():
     # Assuming there's no player with ID 3
-<<<<<<< Updated upstream
     response = client.post("/fold", 
         json={
             "player_id": 3, 
             "ante_amount": 10
             })
     assert response.status_code == 404  # Assuming you return a 404 Not Found when the player is not found
-=======
+
 

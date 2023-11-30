@@ -26,16 +26,26 @@ class Player(Base):
     passwordHash = Column(String(100))
     balance = Column(Float, default=100)
     createdAt = Column(DateTime, default=datetime.utcnow)
+    gamesPlayed = Column(Integer, default=0)
+    turnsPlayed = Column(Integer, default=0)
+    wins = Column(Integer, default=0)
+    defeats = Column(Integer, default=0)
+    plays = Column(Integer, default=0)
+    folds = Column(Integer, default=0)
 
-    stats = relationship("PlayerStat", uselist=False, back_populates="player")
-
-    def __init__(self, firstname, lastname, username, passwordHash, balance=100.0, createdAt=None):
+    def __init__(self, firstname, lastname, username, passwordHash, balance=100.0, createdAt=None, gamesPlayed=0, turnsPlayed=0, wins=0, defeats=0, plays=0, folds=0):
         self.firstname = firstname
         self.lastname = lastname
         self.username = username
         self.passwordHash = passwordHash
         self.balance = balance
         self.createdAt = createdAt if createdAt else datetime.utcnow()
+        self.gamesPlayed = gamesPlayed
+        self.turnsPlayed = turnsPlayed
+        self.wins = wins
+        self.defeats = defeats
+        self.plays = plays
+        self.folds = folds
 
 
 

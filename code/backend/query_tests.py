@@ -12,7 +12,7 @@ script_directory = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(script_directory))))
 
 # Define SQLAlchemy database connection
-DATABASE_URL = "sqlite:///database/poker"  # Replace with your database URL
+DATABASE_URL = "mssql+pyodbc://ffrancoa:DatabaseDictators23@ist659ffrancoa.database.windows.net:1433/poker?driver=ODBC+Driver+18+for+SQL+Server"
 engine = create_engine(DATABASE_URL)
 
 Session = sessionmaker(bind=engine)

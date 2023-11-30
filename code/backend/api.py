@@ -1,20 +1,19 @@
 import os
 import hashlib
 from models.models import Player, Lobby, CardPlayed, PlayerMove
-from models.request_models import PlayerCreate, PlayerLogin
+from models.request_models import PlayerLogin
 from models.functions import create_deck, rank_hand, update_player_balance, deal_hand
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import create_engine, func
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
-from random import shuffle
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(os.path.dirname(script_directory)))
 
 
-DATABASE_URL = "sqlite:///database/poker"
+DATABASE_URL = "mssql+pyodbc://ffrancoa:DatabaseDictators23@ist659ffrancoa.database.windows.net:1433/poker?driver=ODBC+Driver+18+for+SQL+Server"
 engine = create_engine(DATABASE_URL)
 db = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
 
@@ -110,7 +109,6 @@ async def login(player: PlayerLogin):
     finally:
         # Close the database connection
         db.close()
-
 
 
 
@@ -371,138 +369,62 @@ async def fold(lobby_id: int, turn: int):
 
 
 @app.post("/exit")
-
-async def exit_lobby(lobby_id: int):
-    try:
-        # when exiting the lobby, we update the statistics in the player table
-        current_player = db.query(Lobby.hostPlayerId).filter(Lobby.id == lobby_id).first()
-        if not current_player:
-            raise HTTPException(status_code=404, detail="Host player not found")
-        (player_id,) = current_player  # extract the current_player id
-
-        player_stats = db.query(Player).filter(Player.id == player_id).first()
-        if not player_stats:
-            raise HTTPException(status_code=404, detail="Player statistics not found")
-
-
-        player_stats.gamesPlayed = db.query(func.count('*')).select_from(Lobby).filter(Lobby.hostPlayerId == player_id).scalar()
-        db.commit()
-
-        # Close the database connection
-        db.close()
-
-    except IntegrityError as e:
-        # Check if the error is related to a unique constraint violation or other database-related issues
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-
-    except Exception as err:
-        # Handle other unexpected errors
-        raise HTTPException(status_code=500, detail=f"Something went wrong, error: {str(err)}")
-
-    finally:
-        # Close the database connection
-        db.close()
-
-        # Update games played
-        player_stats.gamesPlayed = db.query(func.count(Lobby.id)).filter(Lobby.hostPlayerId == player_id).scalar()
-
-
 async def exit(lobby_id: int):
-    # when exiting the lobby we update the statistics in the player table
-    current_player = db.query(Lobby.hostPlayerId).filter(Lobby.id == lobby_id).first()
-    if not current_player:
-        raise HTTPException(status_code=404, detail="Host player not found")
-    (player_id,) = current_player  # extract the current_player id
-    player_stats = db.query(Player).filter(Player.id == player_id).first()
-
     try:
-        # Update games played
-        player_stats.gamesPlayed = (
-            db.query(func.count(Lobby.id)).filter(Lobby.hostPlayerId == player_id).scalar()
-        )
+        current_lobby = db.query(Lobby).filter(Lobby.id == lobby_id).first()
 
-        # Update turns played
-        player_stats.turnsPlayed = (
-            db.query(func.sum(Lobby.turn)).filter(Lobby.hostPlayerId == player_id).scalar()
-        )
+        if not current_lobby:
+            raise HTTPException(status_code=404, detail="Lobby not found")
 
-        # Calculate turns per game ratio
-        if player_stats.gamesPlayed > 0:  # Avoid division by zero
-            player_stats.turnsPerGame = player_stats.turnsPlayed / player_stats.gamesPlayed
-
-        # Update wins
-        player_stats.wins += (
-            db.query(func.count(PlayerMove.id))
-            .filter(PlayerMove.lobby_id == lobby_id, PlayerMove.winner == "Player")
-            .scalar()
-        )
-
-        # update losses
-        player_stats.defeats += (
-            db.query(func.count(PlayerMove.id))
-            .filter(PlayerMove.lobby_id == lobby_id, PlayerMove.winner == "Dealer")
-            .scalar()
-        )
-
-        # update plays
-        player_stats.plays += (
-            db.query(func.count(PlayerMove.id))
-            .filter(PlayerMove.lobby_id == lobby_id, PlayerMove.move_type == "play")
-            .scalar()
-        )
-
-        # update plays
-        player_stats.folds += (
-            db.query(func.count(PlayerMove.id))
-            .filter(PlayerMove.lobby_id == lobby_id, PlayerMove.move_type == "fold")
-            .scalar()
-        )
-
-        # Update turns played
-        player_stats.turnsPlayed = db.query(func.sum(Lobby.turn)).filter(Lobby.hostPlayerId == player_id).scalar()
-
-        # Calculate turns per game ratio
-        if player_stats.gamesPlayed > 0:  # Avoid division by zero
-            player_stats.turnsPerGame = player_stats.turnsPlayed / player_stats.gamesPlayed
-
-        # Update wins
-        player_stats.wins += db.query(func.count(PlayerMove.id)).filter(
-            PlayerMove.lobby_id == lobby_id,
-            PlayerMove.winner == 'Player'
-        ).scalar()
-
-        # Update defeats
-        player_stats.defeats += db.query(func.count(PlayerMove.id)).filter(
-            PlayerMove.lobby_id == lobby_id,
-            PlayerMove.winner == 'Dealer'
-        ).scalar()
-
-        # Calculate win ratio if games played is more than zero
-        if player_stats.gamesPlayed > 0:
-            player_stats.winRatio = player_stats.wins / player_stats.gamesPlayed
-
-        # Calculate play ratio if games played is more than zero
-        if player_stats.gamesPlayed > 0:
-            player_stats.playRatio = player_stats.plays / player_stats.gamesPlayed
-
-        # Calculate fold ratio if games played is more than zero
-        if player_stats.gamesPlayed > 0:
-            player_stats.foldRatio = player_stats.folds / player_stats.gamesPlayed
-
+        # Update the lobby status directly
+        current_lobby.status = "END"
         db.commit()
 
-        return {"message": "Player stats updated successfully"}
+        return {"message": "Exited lobby"}
 
     except IntegrityError as e:
-        # Check if the error is related to a unique constraint violation or other database-related issues
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-
-    except Exception as err:
-        # Handle other unexpected errors
-        raise HTTPException(status_code=500, detail=f"Something went wrong, error: {str(err)}")
-
     finally:
-        # Close the database connection
+        # Ensure the database session is always closed
         db.close()
 
-    return {"message": "Player stats updated successfully"}
+@app.post("/get_stats")
+async def get_Stats(player_id:int):
+    try:
+        result = db.execute(text("EXEC GetPlayerStats :player_id"), {'player_id': player_id}).fetchone()
+        if result is None:
+            raise HTTPException(status_code=404, detail="Player not found")
+
+        # Extracting stats from result
+        games_played = result.gamesplayed if result.gamesplayed else 0
+        wins = result.wins if result.wins else 0
+        defeats = result.defeats if result.defeats else 0
+        plays = result.plays if result.plays else 0
+        folds = result.folds if result.folds else 0
+
+        # Calculating ratios
+        win_ratio = wins / games_played if games_played > 0 else 0
+        lose_ratio = defeats / games_played if games_played > 0 else 0
+        play_ratio = plays / games_played if games_played > 0 else 0
+        fold_ratio = folds / games_played if games_played > 0 else 0
+
+        # Preparing the JSON response
+        response = {
+            "balance": result.balance,
+            "createdAt": result.createdat,
+            "gamesPlayed": games_played,
+            "turnsPlayed": result.turnsplayed,
+            "wins": wins,
+            "defeats": defeats,
+            "plays": plays,
+            "folds": folds,
+            "winRatio": win_ratio,
+            "loseRatio": lose_ratio,
+            "playRatio": play_ratio,
+            "foldRatio": fold_ratio
+        }
+
+        return response
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
