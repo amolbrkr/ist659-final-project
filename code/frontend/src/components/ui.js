@@ -12,8 +12,10 @@ import {
 import Card from "../components/card.js";
 
 function convertCardValue(value) {
-  const valueMap = { J: 11, Q: 12, K: 13, T: 10, A: 'A' };
-  return valueMap[value] || parseInt(value, 10) || null;
+  const valueMap = { J: 11, Q: 12, K: 13, T: 10, A: "A" };
+  let x = valueMap[value] || value;
+  console.log(x)
+  return x;
 }
 
 const GameUi = (props) => {
@@ -22,6 +24,7 @@ const GameUi = (props) => {
   const [balance, setBalance] = useState(user.balance);
   const [ante, setAnte] = useState(25);
   const [outcome, setOutcome] = useState("");
+  const [showOutcome, setShowOutcome] = useState(false);
   const [pHand, setPHand] = useState([
     ["2", "S"],
     ["2", "D"],
@@ -55,7 +58,7 @@ const GameUi = (props) => {
         console.error(err);
       });
   };
-  
+
   const resetBalance = () => {
     axios
       .post(
@@ -114,11 +117,16 @@ const GameUi = (props) => {
       )
       .then((res) => {
         console.log("Response:", res.data);
-        setBalance(res.data.balance)
-        setOutcome(res.data.outcome)
-        setShowDCards(true)
-        setCardsDealt(false);
-        updateStats()
+        setBalance(res.data.balance);
+        setOutcome(res.data.outcome.replace("_", " ") + "s");
+        setShowOutcome(true);
+        setShowDCards(true);
+        updateStats();
+        setTimeout(() => {
+          setCardsDealt(false);
+          setShowDCards(false);
+          setShowOutcome(false);
+        }, 8000);
       })
       .catch((err) => {
         console.error(err);
@@ -138,16 +146,26 @@ const GameUi = (props) => {
       )
       .then((res) => {
         console.log("Response:", res.data);
-        setBalance(res.data.balance)
-        setOutcome(res.data.outcome)
-        setShowDCards(true)
-        setCardsDealt(false);
-        updateStats()
+        setBalance(res.data.balance);
+        setOutcome(res.data.outcome.replace("_", " ") + "s");
+        setShowOutcome(true);
+        setShowDCards(true);
+        updateStats();
+        setTimeout(() => {
+          setCardsDealt(false);
+          setShowDCards(false);
+          setShowOutcome(false);
+        }, 8000);
       })
       .catch((err) => {
         console.error(err);
       });
   };
+
+  useEffect(() => {
+    updateStats();
+  }, []);
+
   return (
     <Flex p={4} width="100vw" minHeight="80vh">
       <Flex width="20%" flexDirection="column">
@@ -192,87 +210,114 @@ const GameUi = (props) => {
             ${balance}
           </Heading>
         </Flex>
-        <Flex
-          m={4}
-          flexDirection="column"
-          background="white"
-          borderRadius="5px"
-          boxShadow="md"
-        >
-          <Flex justifyContent="space-between" p={2}>
-            <Text fontWeight="bold">PLAYER STATS</Text>
+        {stats && (
+          <Flex
+            m={4}
+            flexDirection="column"
+            background="white"
+            borderRadius="5px"
+            boxShadow="md"
+          >
+            <Flex justifyContent="space-between" p={2}>
+              <Text fontWeight="bold">PLAYER STATS</Text>
+            </Flex>
+            <Flex flexDirection="column">
+              <Flex justifyContent="space-between" px={2}>
+                <Text fontSize="xs">Games Played</Text>
+                <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
+                  {stats.gamesPlayed}
+                </Text>
+              </Flex>
+              <Flex justifyContent="space-between" px={2}>
+                <Text fontSize="xs">Turns Played</Text>
+                <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
+                  {stats.turnsPlayed}
+                </Text>
+              </Flex>
+              <Flex justifyContent="space-between" px={2}>
+                <Text fontSize="xs">Wins</Text>
+                <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
+                  {stats.wins}
+                </Text>
+              </Flex>
+              <Flex justifyContent="space-between" px={2}>
+                <Text fontSize="xs">Losses</Text>
+                <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
+                  {stats.defeats}
+                </Text>
+              </Flex>
+              <Flex justifyContent="space-between" px={2}>
+                <Text fontSize="xs">Win Ratio</Text>
+                <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
+                  {stats.winRatio}
+                </Text>
+              </Flex>
+              <Flex justifyContent="space-between" px={2}>
+                <Text fontSize="xs">Plays</Text>
+                <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
+                  {stats.plays}
+                </Text>
+              </Flex>
+              <Flex justifyContent="space-between" px={2}>
+                <Text fontSize="xs">Folds</Text>
+                <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
+                  {stats.folds}
+                </Text>
+              </Flex>
+              <Flex justifyContent="space-between" px={2}>
+                <Text fontSize="xs">Play Ratio</Text>
+                <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
+                  {stats.playRatio}
+                </Text>
+              </Flex>
+              <Flex justifyContent="space-between" px={2}>
+                <Text fontSize="xs">Fold Ratio</Text>
+                <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
+                  {stats.foldRatio}
+                </Text>
+              </Flex>
+            </Flex>
           </Flex>
-          <Flex flexDirection="column">
-            <Flex justifyContent="space-between" px={2}>
-              <Text fontSize="xs">Games Played</Text>
-              <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
-                0
-              </Text>
-            </Flex>
-            <Flex justifyContent="space-between" px={2}>
-              <Text fontSize="xs">Turns Played</Text>
-              <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
-                0
-              </Text>
-            </Flex>
-            <Flex justifyContent="space-between" px={2}>
-              <Text fontSize="xs">Wins</Text>
-              <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
-                0
-              </Text>
-            </Flex>
-            <Flex justifyContent="space-between" px={2}>
-              <Text fontSize="xs">Losses</Text>
-              <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
-                0
-              </Text>
-            </Flex>
-            <Flex justifyContent="space-between" px={2}>
-              <Text fontSize="xs">Win Ratio</Text>
-              <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
-                0
-              </Text>
-            </Flex>
-            <Flex justifyContent="space-between" px={2}>
-              <Text fontSize="xs">Plays</Text>
-              <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
-                0
-              </Text>
-            </Flex>
-            <Flex justifyContent="space-between" px={2}>
-              <Text fontSize="xs">Folds</Text>
-              <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
-                0
-              </Text>
-            </Flex>
-            <Flex justifyContent="space-between" px={2}>
-              <Text fontSize="xs">Play / Fold Ratio</Text>
-              <Text fontSize="md" fontWeight="bold" color="blackAlpha.500">
-                0
-              </Text>
-            </Flex>
-          </Flex>
-        </Flex>
+        )}
       </Flex>
       <Flex width="80%" backgroundColor="#B3DDC9" justifyContent="center">
         <Flex width="80%" flexDirection="column">
           <Flex flex={1} justifyContent="flex-start" alignItems="center">
-              <Card
-                number={convertCardValue(dHand[0][0])}
-                suit={dHand[0][1].charAt(0)}
-                side={showDCards ? "" : "back"}
-              />
-              <Card
-                number={convertCardValue(dHand[1][0])}
-                suit={dHand[1][1].charAt(0)}
-                side={showDCards ? "" : "back"}
-              />
-              <Card
-                number={convertCardValue(dHand[2][0])}
-                suit={dHand[2][1].charAt(0)}
-                side={showDCards ? "" : "back"}
-              />
-            <Flex>outcome: {outcome}</Flex>
+            <Card
+              number={convertCardValue(dHand[0][0])}
+              suit={dHand[0][1].charAt(0)}
+              side={showDCards ? "" : "back"}
+            />
+            <Card
+              number={convertCardValue(dHand[1][0])}
+              suit={dHand[1][1].charAt(0)}
+              side={showDCards ? "" : "back"}
+            />
+            <Card
+              number={convertCardValue(dHand[2][0])}
+              suit={dHand[2][1].charAt(0)}
+              side={showDCards ? "" : "back"}
+            />
+            {showOutcome && (
+              <Flex
+                mx="50px"
+                flexDirection="column"
+                justifyContent="center"
+                alignItems="center"
+                width="300px"
+                minHeight="200px"
+                backgroundColor="blackAlpha.800"
+                color="white"
+                borderRadius={28}
+                opacity={1}
+                boxShadow="md"
+              >
+                <Heading mt={4} mb={4} textTransform="capitalize">
+                  {outcome}
+                </Heading>
+                <Text>0</Text>
+              </Flex>
+            )}
           </Flex>
           <Flex flex={1} flexDirection="column" alignItems="center">
             <Flex
