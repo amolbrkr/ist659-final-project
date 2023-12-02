@@ -40,3 +40,5 @@ BEGIN
     END CATCH
 END;
 GO
+
+select * from players

@@ -2,6 +2,11 @@ IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'updateStats')
     DROP PROCEDURE updateStats;
 GO
 
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'GetPlayerStats')
+    DROP PROCEDURE GetPlayerStats;
+
+go
+
 CREATE PROCEDURE updateStats 
     @player_id INT
 AS
@@ -75,13 +80,19 @@ BEGIN
 END;
 GO
 
+CREATE PROCEDURE GetPlayerStats
+    @player_id INT
+AS
+BEGIN
+    SELECT balance,
+           createdat,
+           gamesplayed,
+           turnsplayed,
+           wins,
+           defeats,
+           plays,
+           folds
+    FROM players
+    WHERE id = @player_id;
+END;
 GO
-
-EXEC updateStats @player_id = 2;
-
-
-go
-
-select * from players
-
- 
