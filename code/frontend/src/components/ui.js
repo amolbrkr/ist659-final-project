@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { navigate } from "@reach/router";
 import {
   Box,
   Button,
@@ -14,7 +15,7 @@ import Card from "../components/card.js";
 function convertCardValue(value) {
   const valueMap = { J: 11, Q: 12, K: 13, T: 10, A: "A" };
   let x = valueMap[value] || value;
-  console.log(x)
+  console.log(x);
   return x;
 }
 
@@ -161,6 +162,22 @@ const GameUi = (props) => {
         console.error(err);
       });
   };
+  const exit = () => {
+    axios
+      .post(`http://localhost:8000/exit?lobby_id=${user.lobbyId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      })
+      .then((res) => {
+        console.log("Response:", res.data);
+        navigate("/", { replace: true });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
 
   useEffect(() => {
     updateStats();
@@ -180,7 +197,7 @@ const GameUi = (props) => {
             <Text fontSize="2xl" textTransform="capitalize" fontWeight="bold">
               {user.firstname + " " + user.lastname}
             </Text>
-            <Link>Log out</Link>
+            <Link onClick={() => exit()}>Log out</Link>
           </Flex>
           <Flex justifyContent="space-between" px={2}>
             <Text fontSize="xs">Lobby ID</Text>
