@@ -12,14 +12,16 @@ import {
 import Card from "../components/card.js";
 
 function convertCardValue(value) {
-  const valueMap = { J: 11, Q: 12, K: 13, T: 10 };
+  const valueMap = { J: 11, Q: 12, K: 13, T: 10, A: 'A' };
   return valueMap[value] || parseInt(value, 10) || null;
 }
 
 const GameUi = (props) => {
   const user = props.location.state;
   const [turn, setTurn] = useState(user.lobbyTurn);
+  const [balance, setBalance] = useState(user.balance);
   const [ante, setAnte] = useState(25);
+  const [outcome, setOutcome] = useState("");
   const [pHand, setPHand] = useState([
     ["2", "S"],
     ["2", "D"],
@@ -31,6 +33,48 @@ const GameUi = (props) => {
     ["8", "H"],
   ]);
   const [cardsDealt, setCardsDealt] = useState(false);
+  const [showDCards, setShowDCards] = useState(false);
+  const [stats, setStats] = useState(null);
+
+  const updateStats = () => {
+    axios
+      .post(
+        `http://localhost:8000/get-stats?player_id=${parseInt(user.player)}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        }
+      )
+      .then((res) => {
+        console.log("Response:", res.data);
+        setStats(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+  
+  const resetBalance = () => {
+    axios
+      .post(
+        `http://localhost:8000/set-balance?player_id=${parseInt(user.player)}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        }
+      )
+      .then((res) => {
+        console.log("Response:", res.data);
+        setBalance(res.data.balance);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
 
   const deal = () => {
     axios
@@ -57,6 +101,53 @@ const GameUi = (props) => {
       });
   };
 
+  const play = () => {
+    axios
+      .post(
+        `http://localhost:8000/play?lobby_id=${user.lobbyId}&turn=${turn}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        }
+      )
+      .then((res) => {
+        console.log("Response:", res.data);
+        setBalance(res.data.balance)
+        setOutcome(res.data.outcome)
+        setShowDCards(true)
+        setCardsDealt(false);
+        updateStats()
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+
+  const fold = () => {
+    axios
+      .post(
+        `http://localhost:8000/fold?lobby_id=${user.lobbyId}&turn=${turn}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        }
+      )
+      .then((res) => {
+        console.log("Response:", res.data);
+        setBalance(res.data.balance)
+        setOutcome(res.data.outcome)
+        setShowDCards(true)
+        setCardsDealt(false);
+        updateStats()
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
   return (
     <Flex p={4} width="100vw" minHeight="80vh">
       <Flex width="20%" flexDirection="column">
@@ -71,6 +162,7 @@ const GameUi = (props) => {
             <Text fontSize="2xl" textTransform="capitalize" fontWeight="bold">
               {user.firstname + " " + user.lastname}
             </Text>
+            <Link>Log out</Link>
           </Flex>
           <Flex justifyContent="space-between" px={2}>
             <Text fontSize="xs">Lobby ID</Text>
@@ -94,10 +186,10 @@ const GameUi = (props) => {
         >
           <Flex justifyContent="space-between" p={2}>
             <Text fontWeight="bold">BALANCE</Text>
-            <Link>Reset</Link>
+            <Link onClick={() => resetBalance()}>Reset</Link>
           </Flex>
           <Heading p={2} fontWeight="bold" color="orange.300">
-            ${user.balance}
+            ${balance}
           </Heading>
         </Flex>
         <Flex
@@ -165,9 +257,22 @@ const GameUi = (props) => {
       <Flex width="80%" backgroundColor="#B3DDC9" justifyContent="center">
         <Flex width="80%" flexDirection="column">
           <Flex flex={1} justifyContent="flex-start" alignItems="center">
-            <Card number="2" suit="S" />
-            <Card number="2" suit="H" />
-            <Card number="2" suit="C" />
+              <Card
+                number={convertCardValue(dHand[0][0])}
+                suit={dHand[0][1].charAt(0)}
+                side={showDCards ? "" : "back"}
+              />
+              <Card
+                number={convertCardValue(dHand[1][0])}
+                suit={dHand[1][1].charAt(0)}
+                side={showDCards ? "" : "back"}
+              />
+              <Card
+                number={convertCardValue(dHand[2][0])}
+                suit={dHand[2][1].charAt(0)}
+                side={showDCards ? "" : "back"}
+              />
+            <Flex>outcome: {outcome}</Flex>
           </Flex>
           <Flex flex={1} flexDirection="column" alignItems="center">
             <Flex
@@ -277,6 +382,7 @@ const GameUi = (props) => {
                   size="sm"
                   m={1}
                   isDisabled={!cardsDealt}
+                  onClick={() => play()}
                 >
                   Play
                 </Button>
@@ -286,6 +392,7 @@ const GameUi = (props) => {
                   size="sm"
                   m={1}
                   isDisabled={!cardsDealt}
+                  onClick={() => fold()}
                 >
                   Fold
                 </Button>

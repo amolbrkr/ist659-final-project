@@ -309,8 +309,6 @@ async def fold(lobby_id: int, turn: int):
         current_PlayerMove.winner = "fold"
         db.commit()
 
-        # Close the database connection
-        db.close()
 
         return {"outcome": "fold_commited"}
 
@@ -385,3 +383,18 @@ async def get_Stats(player_id: int):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+
+@app.post("/set-balance")
+async def set_balance(player_id: int):
+    # Check if player with given ID exists
+    player = db.query(Player).filter(Player.id == player_id).first()
+    if player is None:
+        raise HTTPException(status_code=404, detail="Player not found")
+    
+    # Set player balance to $1000
+    player.balance = 1000.0
+    db.commit()
+    db.refresh(player)
+
+    return {"setSuccess": True, "balance": player.balance}

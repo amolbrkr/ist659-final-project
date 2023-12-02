@@ -16,7 +16,7 @@ const Header = () => (
       Three Card Poker
     </Text>
     <Flex align="center">
-      <Text color="white">Log out</Text>
+      <Text color="white">Created by Database Dictators</Text>
     </Flex>
   </Flex>
 );
