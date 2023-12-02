@@ -98,4 +98,12 @@ VALUES ('Bob', 'Johnson', 'bobjohnson', 'hash91011');
 
 GO
 --VERIFY
+select * from players
+
+
 select * from lobbies
+
+select * from CardsPlayed
+
+select * from playerMoves
+
