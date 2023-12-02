@@ -1,16 +1,13 @@
 import os
 import hashlib
 from models.models import Player, Lobby, CardPlayed, PlayerMove
-from models.request_models import PlayerLogin
+from models.request_models import PlayerLogin, PlayerCreate
 from models.functions import create_deck, rank_hand, update_player_balance, deal_hand
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
-
-script_directory = os.path.dirname(os.path.abspath(__file__))
-os.chdir(os.path.dirname(os.path.dirname(script_directory)))
 
 
 DATABASE_URL = "mssql+pyodbc://ffrancoa:DatabaseDictators23@ist659ffrancoa.database.windows.net:1433/poker?driver=ODBC+Driver+18+for+SQL+Server"
@@ -28,44 +25,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def default_route():
+    return {"Status": "OK"}
 
-@app.post("/create-lobby")
-async def create_lobby(hostplayerID: int):
-    player_list = [x[0] for x in db.query(Player.id).all()]
-    if hostplayerID not in player_list:
-        raise HTTPException(status_code=404, detail="Player does not exist.")
-
+@app.post("/create-player")
+async def create_player(player: PlayerCreate):
     try:
-        # Assuming hostplayerID is the ID of the host player
-        new_lobby = Lobby(
-            status="WAITING",  # Set the initial status
-            hostPlayerId=hostplayerID,  # Set the host player's ID
-            turn=0
+        new_user = Player(
+            firstname=player.firstname,
+            lastname=player.lastname,
+            username=player.username,
+            passwordHash=hashlib.sha256(player.password.encode("utf-8")).hexdigest(),
         )
-        db.add(new_lobby)
+        db.add(new_user)
         db.commit()
+        db.refresh(new_user)
 
-        new_lobby = db.query(Lobby).order_by(Lobby.id.desc()).first()
         return {
-            "lobby.id": new_lobby.id,
-            "lobby.turn": 0,
+            "createSuccess": True,
+            "player": new_user.id,
+            "firstname": new_user.firstname,
+            "lastname": new_user.lastname,
+            "username": new_user.username,
+            "balance": player.balance,
         }
 
-    except IntegrityError as e:
-        # Check if the error is related to a unique constraint violation
-        if "duplicate key" in str(e):
-            raise HTTPException(status_code=409, detail="Duplicate lobby creation")
-        else:
-            # Handle other database-related errors
-            raise HTTPException(status_code=500, detail="Database error")
-
-    except Exception as err:
-        # Handle other unexpected errors
-        raise HTTPException(status_code=500, detail=f"Something went wrong, error: {str(err)}")
-
-    finally:
-        # Close the database connection
-        db.close()
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="The username already exists")
 
 
 @app.post("/login")
@@ -84,10 +71,21 @@ async def login(player: PlayerLogin):
         if p is None:
             raise HTTPException(
                 status_code=404,
-                detail="Player not found, check username or password.",
+                detail="Player not found, check your username or password.",
             )
 
+        new_lobby = Lobby(
+            status="WAITING",  # Set the initial status
+            hostPlayerId=p.id,  # Set the host player's ID
+            turn=0,
+        )
+        db.add(new_lobby)
+        db.commit()
+
+        new_lobby = db.query(Lobby).order_by(Lobby.id.desc()).first()
         return {
+            "lobbyId": new_lobby.id,
+            "lobbyTurn": 0,
             "loginSuccess": True,
             "player": p.id,
             "firstname": p.firstname,
@@ -106,49 +104,6 @@ async def login(player: PlayerLogin):
             status_code=500, detail=f"Something went wrong, error: {str(err)}"
         )
 
-    finally:
-        # Close the database connection
-        db.close()
-
-
-
-@app.post("/create-lobby")
-async def create_lobby(hostplayerID: int):
-    player_list = [x[0] for x in db.query(Player.id).all()]
-    if hostplayerID not in player_list:
-        raise HTTPException(status_code=404, detail="Player does not exist.")
-
-    try:
-        # Assuming hostplayerID is the ID of the host player
-        new_lobby = Lobby(
-            status="WAITING",  # Set the initial status
-            hostPlayerId=hostplayerID,  # Set the host player's ID
-            turn=0
-        )
-        db.add(new_lobby)
-        db.commit()
-
-        new_lobby = db.query(Lobby).order_by(Lobby.id.desc()).first()
-        return {
-            "lobby.id": new_lobby.id,
-            "lobby.turn": 0,
-        }
-
-    except IntegrityError as e:
-        # Check if the error is related to a unique constraint violation
-        if "duplicate key" in str(e):
-            raise HTTPException(status_code=409, detail="Duplicate lobby creation")
-        else:
-            # Handle other database-related errors
-            raise HTTPException(status_code=500, detail="Database error")
-
-    except Exception as err:
-        # Handle other unexpected errors
-        raise HTTPException(status_code=500, detail=f"Something went wrong, error: {str(err)}")
-
-    finally:
-        # Close the database connection
-        db.close()
 
 @app.post("/deal-cards")
 async def deal_cards(lobby_id: int, ante_amount: int):
@@ -178,8 +133,8 @@ async def deal_cards(lobby_id: int, ante_amount: int):
             lobby_id=lobby_id,
             lobby_turn=new_turn,
             amount=ante_amount,
-            move_type='none',
-            winner='none'
+            move_type="none",
+            winner="none",
         )
         db.add(new_PlayerMove)
 
@@ -197,7 +152,7 @@ async def deal_cards(lobby_id: int, ante_amount: int):
                 lobby_turn=new_turn,
                 card_rank=card_rank,
                 card_suite=card_suit,
-                entity='Player'
+                entity="Player",
             )
             db.add(player_CardPlayed)
         for card in lobby_hand:
@@ -208,19 +163,19 @@ async def deal_cards(lobby_id: int, ante_amount: int):
                 lobby_turn=new_turn,
                 card_rank=card_rank,
                 card_suite=card_suit,
-                entity='Dealer'
+                entity="Dealer",
             )
             db.add(dealer_CardPlayed)
 
         # commit all changes to the database
         db.commit()
-        
+
         # return the info to the front end
         return {
             "lobby": lobby_id,
             "turn": new_turn,
-            "lobby_hand": lobby_hand,
-            "player_hand": player_hand,
+            "lobbyHand": lobby_hand,
+            "playerHand": player_hand,
         }
 
     except IntegrityError as e:
@@ -229,14 +184,9 @@ async def deal_cards(lobby_id: int, ante_amount: int):
 
     except Exception as err:
         # Handle other unexpected errors
-        raise HTTPException(status_code=500, detail=f"Something went wrong, error: {str(err)}")
-
-    finally:
-        # Close the database connection
-        db.close()
-
-
-db.close()
+        raise HTTPException(
+            status_code=500, detail=f"Something went wrong, error: {str(err)}"
+        )
 
 
 @app.post("/play")
@@ -277,7 +227,6 @@ async def play(lobby_id: int, turn: int):
     ]
 
     try:
-
         # rank the hands
         player_rank, player_high = rank_hand(player_hand)
         dealer_rank, dealer_high = rank_hand(dealer_hand)
@@ -297,29 +246,34 @@ async def play(lobby_id: int, turn: int):
                 outcome = "tie"
 
         # update the database
-        current_PlayerMove = db.query(PlayerMove).filter(PlayerMove.lobby_id == lobby_id, PlayerMove.lobby_turn == turn).first()
+        current_PlayerMove = (
+            db.query(PlayerMove)
+            .filter(PlayerMove.lobby_id == lobby_id, PlayerMove.lobby_turn == turn)
+            .first()
+        )
         current_player = db.query(Player).filter(Player.id == player_id).first()
         ante_amount = current_PlayerMove.amount
         if outcome == "player_win":
             current_player.balance += 2 * ante_amount
-            current_PlayerMove.winner = 'Player'
+            current_PlayerMove.winner = "Player"
         elif outcome == "tie":
             current_player.balance += 2 * ante_amount
-            current_PlayerMove.winner = 'tie'
+            current_PlayerMove.winner = "tie"
         else:
-            current_PlayerMove.winner = 'Dealer'
-        current_PlayerMove.move_type = 'play'
+            current_PlayerMove.winner = "Dealer"
+        current_PlayerMove.move_type = "play"
 
         # commit changes to database
         db.commit()
 
         # get new player balance
-        updated_player_balance = db.query(Player.balance).filter(Player.id == player_id).first()
+        updated_player_balance = (
+            db.query(Player.balance).filter(Player.id == player_id).first()
+        )
         (player_balance,) = updated_player_balance
 
         # output to frontend
-        return {"outcome": outcome,
-                "balance": player_balance}
+        return {"outcome": outcome, "balance": player_balance}
 
     except IntegrityError as e:
         # Check if the error is related to a unique constraint violation or other database-related issues
@@ -327,27 +281,32 @@ async def play(lobby_id: int, turn: int):
 
     except Exception as err:
         # Handle other unexpected errors
-        raise HTTPException(status_code=500, detail=f"Something went wrong, error: {str(err)}")
+        raise HTTPException(
+            status_code=500, detail=f"Something went wrong, error: {str(err)}"
+        )
 
-    finally:
-        # Close the database connection
-        db.close()
 
 @app.post("/fold")
 async def fold(lobby_id: int, turn: int):
     try:
         # Get the player by ID
-        current_player = db.query(Lobby.hostPlayerId).filter(Lobby.id == lobby_id).first()
+        current_player = (
+            db.query(Lobby.hostPlayerId).filter(Lobby.id == lobby_id).first()
+        )
         if not current_player:
             raise HTTPException(status_code=404, detail="Host player not found")
         (player_id,) = current_player  # extract the current_player id
 
-        current_PlayerMove = db.query(PlayerMove).filter(PlayerMove.lobby_id == lobby_id, PlayerMove.lobby_turn == turn).first()
+        current_PlayerMove = (
+            db.query(PlayerMove)
+            .filter(PlayerMove.lobby_id == lobby_id, PlayerMove.lobby_turn == turn)
+            .first()
+        )
         if not current_PlayerMove:
             raise HTTPException(status_code=404, detail="PlayerMove not found")
 
-        current_PlayerMove.move_type = 'fold'
-        current_PlayerMove.winner = 'fold'
+        current_PlayerMove.move_type = "fold"
+        current_PlayerMove.winner = "fold"
         db.commit()
 
         # Close the database connection
@@ -361,11 +320,9 @@ async def fold(lobby_id: int, turn: int):
 
     except Exception as err:
         # Handle other unexpected errors
-        raise HTTPException(status_code=500, detail=f"Something went wrong, error: {str(err)}")
-
-    finally:
-        # Close the database connection
-        db.close()
+        raise HTTPException(
+            status_code=500, detail=f"Something went wrong, error: {str(err)}"
+        )
 
 
 @app.post("/exit")
@@ -384,14 +341,14 @@ async def exit(lobby_id: int):
 
     except IntegrityError as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-    finally:
-        # Ensure the database session is always closed
-        db.close()
 
-@app.post("/get_stats")
-async def get_Stats(player_id:int):
+
+@app.post("/get-stats")
+async def get_Stats(player_id: int):
     try:
-        result = db.execute(text("EXEC GetPlayerStats :player_id"), {'player_id': player_id}).fetchone()
+        result = db.execute(
+            text("EXEC GetPlayerStats :player_id"), {"player_id": player_id}
+        ).fetchone()
         if result is None:
             raise HTTPException(status_code=404, detail="Player not found")
 
@@ -421,7 +378,7 @@ async def get_Stats(player_id:int):
             "winRatio": win_ratio,
             "loseRatio": lose_ratio,
             "playRatio": play_ratio,
-            "foldRatio": fold_ratio
+            "foldRatio": fold_ratio,
         }
 
         return response

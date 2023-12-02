@@ -10,7 +10,6 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import Card from "./card";
 import axios from "axios";
 import { navigate } from "@reach/router";
 
@@ -34,7 +33,7 @@ const UserAuth = () => {
     })
       .then((res) => {
         console.log("Response:", res.data);
-        if (res.data.loginSuccess === true) navigate("/game", {replace: true})
+        if (res.data.loginSuccess === true) navigate("/game", {state: res.data, replace: true})
       })
       .catch((err) => {
         console.error(err);

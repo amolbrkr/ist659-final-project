@@ -33,7 +33,21 @@ class Player(Base):
     plays = Column(Integer, default=0)
     folds = Column(Integer, default=0)
 
-    def __init__(self, firstname, lastname, username, passwordHash, balance=100.0, createdAt=None, gamesPlayed=0, turnsPlayed=0, wins=0, defeats=0, plays=0, folds=0):
+    def __init__(
+        self,
+        firstname,
+        lastname,
+        username,
+        passwordHash,
+        balance=100.0,
+        createdAt=None,
+        gamesPlayed=0,
+        turnsPlayed=0,
+        wins=0,
+        defeats=0,
+        plays=0,
+        folds=0,
+    ):
         self.firstname = firstname
         self.lastname = lastname
         self.username = username
@@ -46,7 +60,6 @@ class Player(Base):
         self.defeats = defeats
         self.plays = plays
         self.folds = folds
-
 
 
 class Lobby(Base):
@@ -73,10 +86,10 @@ class PlayerMove(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     lobby_id = Column(Integer, ForeignKey("lobbies.id"), nullable=False)
-    lobby_turn = Column(Integer,nullable=False,default=1)
+    lobby_turn = Column(Integer, nullable=False, default=1)
     move_type = Column(String(4), nullable=False)
     amount = Column(Float, nullable=False)
-    winner = Column(String(6), nullable=False, default = 'none')
+    winner = Column(String(6), nullable=False, default="none")
     move_time = Column(DateTime)
 
     def __init__(self, lobby_id, move_type, amount, winner, lobby_turn, move_time=None):
@@ -91,7 +104,7 @@ class PlayerMove(Base):
 class CardPlayed(Base):
     __tablename__ = "CardsPlayed"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)   
+    id = Column(Integer, primary_key=True, autoincrement=True)
     lobby_id = Column(Integer, ForeignKey("lobbies.id"), nullable=False)
     lobby_turn = Column(Integer, nullable=False)
     card_rank = Column(String(2), nullable=False)
@@ -104,5 +117,3 @@ class CardPlayed(Base):
         self.card_rank = card_rank
         self.card_suite = card_suite
         self.entity = entity
-
-

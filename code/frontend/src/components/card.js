@@ -1,4 +1,5 @@
 import React from "react";
+import cardback from "./cardback.png"
 
 const f = (x) => {
   if (x === 1) return "A";
@@ -6,7 +7,7 @@ const f = (x) => {
   return "J,Q,K".split(",")[x - 11];
 };
 
-const Card = ({ number, suit }) => {
+const Card = ({ number, suit, side = "back" }) => {
   const style = {
     width: "calc(100vw/12)",
     margin: "8px",
@@ -23,7 +24,7 @@ const Card = ({ number, suit }) => {
   }, [number, suit]);
 
   return imgUrl === "" ? null : (
-    <img alt="text" style={style} src={imgUrl} />
+    <img alt="text" style={style} src={side === "back" ? cardback : imgUrl} />
   );
 };
 
