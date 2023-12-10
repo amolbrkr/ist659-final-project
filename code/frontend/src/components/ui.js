@@ -54,6 +54,7 @@ const GameUi = (props) => {
       .then((res) => {
         console.log("Response:", res.data);
         setStats(res.data);
+        setBalance(res.data.balance);
       })
       .catch((err) => {
         console.error(err);
@@ -147,7 +148,7 @@ const GameUi = (props) => {
       )
       .then((res) => {
         console.log("Response:", res.data);
-        setBalance(res.data.balance);
+        // setBalance(res.data.balance);
         setOutcome(res.data.outcome.replace("_", " ") + "s");
         setShowOutcome(true);
         setShowDCards(true);

@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
 
 
-DATABASE_URL = "mssql+pyodbc://ffrancoa:DatabaseDictators23@ist659ffrancoa.database.windows.net:1433/poker?driver=ODBC+Driver+18+for+SQL+Server"
+DATABASE_URL = "mssql+pyodbc://ffrancoa:DatabaseLogin23@ffrancoa.database.windows.net:1433/poker?driver=ODBC+Driver+18+for+SQL+Server"
 engine = create_engine(DATABASE_URL)
 db = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
 
@@ -25,9 +25,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def default_route():
     return {"Status": "OK"}
+
 
 @app.post("/create-player")
 async def create_player(player: PlayerCreate):
@@ -37,6 +39,7 @@ async def create_player(player: PlayerCreate):
             lastname=player.lastname,
             username=player.username,
             passwordHash=hashlib.sha256(player.password.encode("utf-8")).hexdigest(),
+            balance=1000,
         )
         db.add(new_user)
         db.commit()
@@ -48,7 +51,7 @@ async def create_player(player: PlayerCreate):
             "firstname": new_user.firstname,
             "lastname": new_user.lastname,
             "username": new_user.username,
-            "balance": player.balance,
+            "balance": 1000,
         }
 
     except IntegrityError:
@@ -309,7 +312,6 @@ async def fold(lobby_id: int, turn: int):
         current_PlayerMove.winner = "fold"
         db.commit()
 
-
         return {"outcome": "fold_commited"}
 
     except IntegrityError as e:
@@ -391,7 +393,7 @@ async def set_balance(player_id: int):
     player = db.query(Player).filter(Player.id == player_id).first()
     if player is None:
         raise HTTPException(status_code=404, detail="Player not found")
-    
+
     # Set player balance to $1000
     player.balance = 1000.0
     db.commit()
